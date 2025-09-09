@@ -41,7 +41,7 @@ export class EmailService {
     try {
       // SMTP Provider (Generic)
       if (process.env.SMTP_HOST) {
-        const smtpTransporter = nodemailer.createTransporter({
+        const smtpTransporter = nodemailer.createTransport({
           host: process.env.SMTP_HOST,
           port: parseInt(process.env.SMTP_PORT || '587'),
           secure: process.env.SMTP_SECURE === 'true',
@@ -64,7 +64,7 @@ export class EmailService {
 
       // SendGrid Provider
       if (process.env.SENDGRID_API_KEY) {
-        const sendgridTransporter = nodemailer.createTransporter({
+        const sendgridTransporter = nodemailer.createTransport({
           host: 'smtp.sendgrid.net',
           port: 587,
           secure: false,
@@ -84,7 +84,7 @@ export class EmailService {
 
       // AWS SES Provider
       if (process.env.AWS_SES_REGION) {
-        const sesTransporter = nodemailer.createTransporter({
+        const sesTransporter = nodemailer.createTransport({
           host: `email-smtp.${process.env.AWS_SES_REGION}.amazonaws.com`,
           port: 587,
           secure: false,
@@ -104,7 +104,7 @@ export class EmailService {
 
       // Gmail Provider (for development)
       if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
-        const gmailTransporter = nodemailer.createTransporter({
+        const gmailTransporter = nodemailer.createTransport({
           service: 'gmail',
           auth: {
             user: process.env.GMAIL_USER,
@@ -553,3 +553,4 @@ export class EmailService {
 }
 
 export const emailService = new EmailService();
+

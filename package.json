@@ -6,20 +6,18 @@
   "workspaces": [
     "mobile-app",
     "backend",
-    "admin-portal",
-    "shared"
+    "admin-portal"
   ],
   "scripts": {
     "install:all": "npm install && npm run install:mobile && npm run install:backend && npm run install:admin",
     "install:mobile": "cd mobile-app && npm install",
     "install:backend": "cd backend && npm install",
     "install:admin": "cd admin-portal && npm install",
-    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:admin\" \"npm run dev:mobile\"",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:admin\"",
     "dev:backend": "cd backend && npm run dev",
     "dev:admin": "cd admin-portal && npm run dev",
     "dev:mobile": "cd mobile-app && npm start",
-    "build": "npm run build:shared && npm run build:backend && npm run build:admin",
-    "build:shared": "cd shared && npm run build",
+    "build": "npm run build:backend && npm run build:admin",
     "build:backend": "cd backend && npm run build",
     "build:admin": "cd admin-portal && npm run build",
     "test": "npm run test:backend && npm run test:admin && npm run test:mobile",
@@ -43,6 +41,6 @@
     "node.js",
     "next.js"
   ],
-  "author": "Your Name",
+  "author": "Himanshu Jasoriya",
   "license": "MIT"
 }

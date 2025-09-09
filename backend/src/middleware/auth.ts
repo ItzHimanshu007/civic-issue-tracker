@@ -180,3 +180,6 @@ export const optionalAuth = async (
     next();
   }
 };
+
+// Alias for compatibility
+export const auth = authenticateToken;

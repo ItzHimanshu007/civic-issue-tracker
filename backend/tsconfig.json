@@ -29,13 +29,16 @@
       "@/routes/*": ["src/routes/*"],
       "@/services/*": ["src/services/*"],
       "@/utils/*": ["src/utils/*"]
-    }
+    },
+    "types": ["node", "jest"]
   },
   "include": [
     "src/**/*"
   ],
   "exclude": [
     "node_modules",
+    "../node_modules",
+    "../mobile-app/**/*",
     "dist",
     "**/*.test.ts",
     "**/*.spec.ts"
