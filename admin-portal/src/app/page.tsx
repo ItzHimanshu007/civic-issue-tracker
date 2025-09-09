@@ -38,24 +38,25 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="p-6">
       {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Civic Tracker Dashboard
-          </h1>
-        </div>
-      </header>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Dashboard
+        </h1>
+        <p className="text-gray-600">
+          Overview of civic issue reports and system status
+        </p>
+      </div>
 
       {/* Main content */}
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <div>
         {/* Stats */}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat) => {
             const Icon = stat.icon;
             return (
-              <div key={stat.name} className="card">
+              <div key={stat.name} className="bg-white shadow rounded-lg p-6">
                 <div className="flex items-center">
                   <div className={`flex-shrink-0 p-3 rounded-md ${stat.bgColor}`}>
                     <Icon className={`h-6 w-6 ${stat.color}`} />
@@ -76,7 +77,7 @@ export default function Dashboard() {
 
         {/* Recent Reports */}
         <div className="mt-8">
-          <div className="card">
+          <div className="bg-white shadow rounded-lg p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               Recent Reports
             </h2>
@@ -152,7 +153,7 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

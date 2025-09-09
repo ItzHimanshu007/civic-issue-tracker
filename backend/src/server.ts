@@ -11,6 +11,7 @@ import { connectRedis } from './utils/redis';
 import { logger } from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
 import { notFoundHandler } from './middleware/notFoundHandler';
+import { jobScheduler } from './services/jobScheduler';
 
 // Routes
 import authRoutes from './routes/auth';
@@ -18,6 +19,10 @@ import reportsRoutes from './routes/reports';
 import usersRoutes from './routes/users';
 import departmentsRoutes from './routes/departments';
 import analyticsRoutes from './routes/analytics';
+import mapsRoutes from './routes/maps';
+import engagementRoutes from './routes/engagement';
+import gamificationRoutes from './routes/gamification';
+import notificationRoutes from './routes/notifications';
 
 dotenv.config();
 
@@ -78,6 +83,10 @@ app.use('/api/reports', reportsRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/departments', departmentsRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/maps', mapsRoutes);
+app.use('/api/engagement', engagementRoutes);
+app.use('/api/gamification', gamificationRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Socket.io connection handling
 io.on('connection', (socket) => {
@@ -113,6 +122,9 @@ const startServer = async () => {
     await connectRedis();
     logger.info('Connected to Redis');
 
+    // Start job scheduler
+    jobScheduler.start();
+
     server.listen(PORT, () => {
       logger.info(`Server running on port ${PORT}`);
       logger.info(`Environment: ${process.env.NODE_ENV}`);
@@ -126,6 +138,7 @@ const startServer = async () => {
 // Graceful shutdown
 process.on('SIGTERM', () => {
   logger.info('SIGTERM signal received');
+  jobScheduler.stop();
   server.close(() => {
     logger.info('Server closed');
     process.exit(0);
@@ -134,6 +147,7 @@ process.on('SIGTERM', () => {
 
 process.on('SIGINT', () => {
   logger.info('SIGINT signal received');
+  jobScheduler.stop();
   server.close(() => {
     logger.info('Server closed');
     process.exit(0);

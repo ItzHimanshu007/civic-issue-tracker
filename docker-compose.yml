@@ -38,11 +38,16 @@ services:
       DATABASE_URL: postgresql://postgres:password@postgres:5432/civic_tracker
       REDIS_URL: redis://redis:6379
       JWT_SECRET: your-jwt-secret-key
+      JWT_REFRESH_SECRET: your-jwt-refresh-secret-key
       TWILIO_ACCOUNT_SID: your-twilio-sid
       TWILIO_AUTH_TOKEN: your-twilio-token
+      TWILIO_FROM_NUMBER: +1234567890
       AWS_ACCESS_KEY_ID: your-aws-key
       AWS_SECRET_ACCESS_KEY: your-aws-secret
       AWS_S3_BUCKET: civic-tracker-media
+      AWS_REGION: us-east-1
+      OPENAI_API_KEY: your-openai-api-key
+      GOOGLE_VISION_API_KEY: your-google-vision-api-key
     volumes:
       - ./backend:/app
       - /app/node_modules
