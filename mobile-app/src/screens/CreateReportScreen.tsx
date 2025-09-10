@@ -8,10 +8,17 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  Image,
+  FlatList,
+  Dimensions,
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { MaterialIcons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { IssueCategory, Priority, CreateReportRequest } from '../types';
 import { createReport } from '../services/reportsService';
+
+const { width } = Dimensions.get('window');
 
 interface Props {
   navigation: StackNavigationProp<any>;
@@ -24,6 +31,8 @@ const CreateReportScreen: React.FC<Props> = ({ navigation }) => {
   const [priority, setPriority] = useState<Priority>(Priority.NORMAL);
   const [address, setAddress] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [images, setImages] = useState<string[]>([]);
+  const [isPickingImage, setIsPickingImage] = useState(false);
 
   // Mock location for now - in a real app this would come from GPS
   // Using Ranchi, Jharkhand coordinates
@@ -51,6 +60,92 @@ const CreateReportScreen: React.FC<Props> = ({ navigation }) => {
     { value: Priority.CRITICAL, label: 'Critical' },
   ];
 
+  const requestPermissions = async () => {
+    const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
+    const { status: galleryStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (cameraStatus !== 'granted' || galleryStatus !== 'granted') {
+      Alert.alert(
+        'Permissions Required',
+        'We need camera and gallery permissions to let you add photos to your reports.'
+      );
+      return false;
+    }
+    return true;
+  };
+
+  const pickImageFromCamera = async () => {
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) return;
+
+    setIsPickingImage(true);
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        setImages(prev => [...prev, result.assets[0].uri]);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to take photo. Please try again.');
+    } finally {
+      setIsPickingImage(false);
+    }
+  };
+
+  const pickImageFromGallery = async () => {
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) return;
+
+    setIsPickingImage(true);
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+        allowsMultipleSelection: false,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        setImages(prev => [...prev, result.assets[0].uri]);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to pick image. Please try again.');
+    } finally {
+      setIsPickingImage(false);
+    }
+  };
+
+  const showImagePickerOptions = () => {
+    Alert.alert(
+      'Add Photo',
+      'Choose how you want to add a photo to your report',
+      [
+        {
+          text: '📷 Take Photo',
+          onPress: pickImageFromCamera,
+        },
+        {
+          text: '🖼️ Gallery',
+          onPress: pickImageFromGallery,
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+      ]
+    );
+  };
+
+  const removeImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async () => {
     if (!title.trim() || !description.trim() || !address.trim()) {
       Alert.alert('Error', 'Please fill in all required fields');
@@ -66,7 +161,7 @@ const CreateReportScreen: React.FC<Props> = ({ navigation }) => {
       priority,
       location: mockLocation,
       address: address.trim(),
-      images: [],
+      images: images,
       videos: [],
       audioNotes: [],
     };
@@ -86,6 +181,7 @@ const CreateReportScreen: React.FC<Props> = ({ navigation }) => {
               setCategory(IssueCategory.OTHER);
               setPriority(Priority.NORMAL);
               setAddress('');
+              setImages([]);
               navigation.goBack();
             },
           },
@@ -177,6 +273,48 @@ const CreateReportScreen: React.FC<Props> = ({ navigation }) => {
           placeholder="Where is this issue located?"
           editable={!isSubmitting}
         />
+
+        <Text style={styles.label}>Photos ({images.length}/5)</Text>
+        <View style={styles.imageSection}>
+          <TouchableOpacity
+            style={[styles.addImageButton, (isSubmitting || isPickingImage) && styles.addImageButtonDisabled]}
+            onPress={showImagePickerOptions}
+            disabled={isSubmitting || isPickingImage || images.length >= 5}
+          >
+            {isPickingImage ? (
+              <ActivityIndicator color="#2E7D32" size="small" />
+            ) : (
+              <>
+                <MaterialIcons name="add-a-photo" size={32} color="#2E7D32" />
+                <Text style={styles.addImageText}>
+                  {images.length === 0 ? 'Add Photos' : 'Add More'}
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
+          
+          {images.length > 0 && (
+            <FlatList
+              data={images}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(_, index) => index.toString()}
+              style={styles.imagesList}
+              renderItem={({ item, index }) => (
+                <View style={styles.imageContainer}>
+                  <Image source={{ uri: item }} style={styles.imagePreview} />
+                  <TouchableOpacity
+                    style={styles.removeImageButton}
+                    onPress={() => removeImage(index)}
+                    disabled={isSubmitting}
+                  >
+                    <MaterialIcons name="close" size={16} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+              )}
+            />
+          )}
+        </View>
 
         <View style={styles.locationInfo}>
           <Text style={styles.locationText}>
@@ -306,6 +444,59 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',
+  },
+  imageSection: {
+    marginBottom: 16,
+  },
+  addImageButton: {
+    borderWidth: 2,
+    borderColor: '#2E7D32',
+    borderStyle: 'dashed',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f8fff8',
+    marginBottom: 12,
+  },
+  addImageButtonDisabled: {
+    borderColor: '#ccc',
+    backgroundColor: '#f5f5f5',
+  },
+  addImageText: {
+    marginTop: 8,
+    fontSize: 16,
+    color: '#2E7D32',
+    fontWeight: '600',
+  },
+  imagesList: {
+    marginTop: 8,
+  },
+  imageContainer: {
+    position: 'relative',
+    marginRight: 12,
+  },
+  imagePreview: {
+    width: 100,
+    height: 100,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
+  },
+  removeImageButton: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: '#F44336',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
   },
 });
 
