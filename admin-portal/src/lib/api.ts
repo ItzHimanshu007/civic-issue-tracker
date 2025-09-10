@@ -11,7 +11,10 @@ api.interceptors.request.use(
   (config) => {
     const tokens = useAuthStore.getState().tokens;
     if (tokens?.accessToken) {
-      config.headers.Authorization = `Bearer ${tokens.accessToken}`;
+      // Skip auth header for development/offline tokens
+      if (!tokens.accessToken.includes('dev-') && !tokens.accessToken.includes('demo-') && !tokens.accessToken.includes('offline-')) {
+        config.headers.Authorization = `Bearer ${tokens.accessToken}`;
+      }
     }
     return config;
   },
@@ -25,12 +28,19 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    const tokens = useAuthStore.getState().tokens;
+    
+    // Skip auth handling for development/offline tokens
+    if (tokens?.accessToken && (tokens.accessToken.includes('dev-') || tokens.accessToken.includes('demo-') || tokens.accessToken.includes('offline-'))) {
+      // For development mode, continue without auth issues
+      console.log('Development mode: Skipping auth error handling');
+      return Promise.reject(error);
+    }
     
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       
-      const tokens = useAuthStore.getState().tokens;
-      if (tokens?.refreshToken) {
+      if (tokens?.refreshToken && !tokens.refreshToken.includes('dev-') && !tokens.refreshToken.includes('demo-') && !tokens.refreshToken.includes('offline-')) {
         try {
           const response = await axios.post(
             `${process.env.NEXT_PUBLIC_API_URL}/api/auth/refresh-token`,
@@ -50,9 +60,11 @@ api.interceptors.response.use(
           return Promise.reject(refreshError);
         }
       } else {
-        // No refresh token, logout user
-        useAuthStore.getState().logout();
-        window.location.href = '/login';
+        // No refresh token or development token, logout user
+        if (!tokens?.accessToken?.includes('dev-') && !tokens?.accessToken?.includes('demo-') && !tokens?.accessToken?.includes('offline-')) {
+          useAuthStore.getState().logout();
+          window.location.href = '/login';
+        }
       }
     }
     
