@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Civic Issue Tracker - Mobile App Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        
+        .phone-container {
+            max-width: 375px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            overflow: hidden;
+            height: 812px;
+        }
+        
+        .status-bar {
+            background: #2E7D32;
+            color: white;
+            padding: 12px 20px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .tab-navigation {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            height: 80px;
+        }
+        
+        .tab-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #757575;
+            text-decoration: none;
+        }
+        
+        .tab-item.active {
+            color: #2E7D32;
+        }
+        
+        .tab-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        
+        .tab-label {
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .screen {
+            padding: 20px;
+            height: calc(100% - 140px);
+            overflow-y: auto;
+        }
+        
+        .screen-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2E7D32;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .screen-subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+        }
+        
+        .input:focus {
+            border-color: #2E7D32;
+            outline: none;
+        }
+        
+        .textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .category-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .category-btn {
+            padding: 8px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 20px;
+            background: white;
+            color: #666;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .category-btn.active {
+            border-color: #2E7D32;
+            background: #2E7D32;
+            color: white;
+        }
+        
+        .priority-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .priority-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            color: #666;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        
+        .priority-btn.normal.active { border-color: #4CAF50; background: #4CAF50; color: white; }
+        .priority-btn.urgent.active { border-color: #FF9800; background: #FF9800; color: white; }
+        .priority-btn.critical.active { border-color: #F44336; background: #F44336; color: white; }
+        
+        .location-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .location-text {
+            font-weight: 600;
+            color: #2E7D32;
+            margin-bottom: 5px;
+        }
+        
+        .location-subtext {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: #2E7D32;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .submit-btn:hover {
+            background: #1B5E20;
+        }
+        
+        .report-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        
+        .report-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            flex: 1;
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            background: #FFA726;
+        }
+        
+        .report-description {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        
+        .report-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .category {
+            font-size: 14px;
+            color: #2E7D32;
+            font-weight: 600;
+        }
+        
+        .priority-badge {
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            background: #4CAF50;
+        }
+        
+        .report-footer {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+        
+        .engagement {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .filter-tabs {
+            display: flex;
+            overflow-x: auto;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+        
+        .filter-tab {
+            padding: 8px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 20px;
+            background: white;
+            color: #666;
+            font-size: 14px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        
+        .filter-tab.active {
+            border-color: #2E7D32;
+            background: #2E7D32;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <div class="status-bar">🏠 Civic Issue Tracker</div>
+        
+        <!-- Home Screen -->
+        <div id="home-screen" class="screen">
+            <div class="screen-title">🏠 Civic Issue Tracker</div>
+            <div class="screen-subtitle">Report and track civic issues in your community</div>
+            <button class="submit-btn" onclick="showScreen('reports-screen')">View Recent Issues</button>
+        </div>
+        
+        <!-- Reports Screen -->
+        <div id="reports-screen" class="screen hidden">
+            <div class="screen-title">📄 All Reports</div>
+            
+            <div class="filter-tabs">
+                <div class="filter-tab active" onclick="filterReports('all')">All</div>
+                <div class="filter-tab" onclick="filterReports('pothole')">Potholes</div>
+                <div class="filter-tab" onclick="filterReports('streetlight')">Street Lights</div>
+                <div class="filter-tab" onclick="filterReports('garbage')">Garbage</div>
+                <div class="filter-tab" onclick="filterReports('water_leak')">Water Leaks</div>
+            </div>
+            
+            <div id="reports-list">
+                <div class="report-card">
+                    <div class="report-header">
+                        <div class="report-title">Large pothole on Main Street</div>
+                        <div class="status-badge">SUBMITTED</div>
+                    </div>
+                    <div class="report-description">
+                        There's a significant pothole that's been growing larger after recent rains. It's causing damage to vehicles and is a safety hazard.
+                    </div>
+                    <div class="report-meta">
+                        <div class="category">Pothole</div>
+                        <div class="priority-badge">URGENT</div>
+                    </div>
+                    <div class="report-footer">
+                        <div>📍 123 Main Street, Downtown</div>
+                        <div>Jan 15, 2024</div>
+                    </div>
+                    <div class="engagement">
+                        <div>👍 12</div>
+                        <div>By: Sarah Johnson</div>
+                    </div>
+                </div>
+                
+                <div class="report-card">
+                    <div class="report-header">
+                        <div class="report-title">Street light out for weeks</div>
+                        <div class="status-badge" style="background: #42A5F5;">IN_PROGRESS</div>
+                    </div>
+                    <div class="report-description">
+                        The street light at the intersection has been out for over 2 weeks making it dangerous for pedestrians at night.
+                    </div>
+                    <div class="report-meta">
+                        <div class="category">Street Light</div>
+                        <div class="priority-badge" style="background: #4CAF50;">NORMAL</div>
+                    </div>
+                    <div class="report-footer">
+                        <div>📍 Oak Ave & 2nd Street</div>
+                        <div>Jan 12, 2024</div>
+                    </div>
+                    <div class="engagement">
+                        <div>👍 8</div>
+                        <div>By: Mike Chen</div>
+                    </div>
+                </div>
+                
+                <div class="report-card">
+                    <div class="report-header">
+                        <div class="report-title">Overflowing garbage bin</div>
+                        <div class="status-badge" style="background: #4CAF50;">RESOLVED</div>
+                    </div>
+                    <div class="report-description">
+                        The public garbage bin near the park entrance has been overflowing for days, attracting pests.
+                    </div>
+                    <div class="report-meta">
+                        <div class="category">Garbage</div>
+                        <div class="priority-badge">NORMAL</div>
+                    </div>
+                    <div class="report-footer">
+                        <div>📍 Central Park Entrance</div>
+                        <div>Jan 10, 2024</div>
+                    </div>
+                    <div class="engagement">
+                        <div>👍 15</div>
+                        <div>By: Anna Smith</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Create Report Screen -->
+        <div id="create-screen" class="screen hidden">
+            <div class="screen-title">📝 Create Report</div>
+            <div class="screen-subtitle">Report a new civic issue</div>
+            
+            <form id="report-form">
+                <div class="form-group">
+                    <label class="label">Title *</label>
+                    <input type="text" class="input" placeholder="Brief description of the issue" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="label">Description *</label>
+                    <textarea class="input textarea" placeholder="Detailed description of the issue" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="label">Category</label>
+                    <div class="category-buttons">
+                        <div class="category-btn active">Pothole</div>
+                        <div class="category-btn">Street Light</div>
+                        <div class="category-btn">Garbage</div>
+                        <div class="category-btn">Water Leak</div>
+                        <div class="category-btn">Sewage</div>
+                        <div class="category-btn">Road Maintenance</div>
+                        <div class="category-btn">Traffic Signal</div>
+                        <div class="category-btn">Park Maintenance</div>
+                        <div class="category-btn">Other</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="label">Priority</label>
+                    <div class="priority-buttons">
+                        <div class="priority-btn normal active">Normal</div>
+                        <div class="priority-btn urgent">Urgent</div>
+                        <div class="priority-btn critical">Critical</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="label">Address *</label>
+                    <input type="text" class="input" placeholder="Where is this issue located?" required>
+                </div>
+                
+                <div class="location-info">
+                    <div class="location-text">📍 Location: 40.7128, -74.0060</div>
+                    <div class="location-subtext">(In a real app, this would use your current GPS location)</div>
+                </div>
+                
+                <button type="submit" class="submit-btn">Submit Report</button>
+            </form>
+        </div>
+        
+        <!-- Map Screen -->
+        <div id="map-screen" class="screen hidden">
+            <div class="screen-title">🗺️ Issue Map</div>
+            <div class="screen-subtitle">Interactive map showing all reported issues</div>
+            <div style="background: #e8f5e8; border-radius: 12px; padding: 60px 20px; text-align: center; color: #2E7D32; font-size: 18px; font-weight: 600; margin-top: 40px;">
+                📍 Interactive Map Feature<br><br>
+                <div style="font-size: 14px; font-weight: normal; color: #666;">
+                    This would show a real map with pins for each reported issue, allowing users to see nearby problems and their status.
+                </div>
+            </div>
+        </div>
+        
+        <!-- Profile Screen -->
+        <div id="profile-screen" class="screen hidden">
+            <div class="screen-title">👤 Profile</div>
+            <div class="screen-subtitle">Your account and achievements</div>
+            
+            <div style="text-align: center; margin-top: 40px;">
+                <div style="width: 80px; height: 80px; border-radius: 40px; background: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 32px; color: white; margin: 0 auto 20px;">👤</div>
+                <h2 style="margin-bottom: 8px;">John Doe</h2>
+                <p style="color: #666; margin-bottom: 30px;">Mobile App User</p>
+                
+                <div style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                        <span>🏆 Points</span>
+                        <strong style="color: #2E7D32;">150</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                        <span>📝 Reports Created</span>
+                        <strong>5</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>👍 Upvotes Received</span>
+                        <strong>23</strong>
+                    </div>
+                </div>
+                
+                <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <h3 style="margin-bottom: 15px;">Achievements</h3>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <div style="padding: 8px; background: #f0f9ff; border-radius: 8px;">🥇 First Report</div>
+                        <div style="padding: 8px; background: #f0f9ff; border-radius: 8px;">🎯 5 Reports</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <a class="tab-item active" onclick="showScreen('home-screen')">
+                <div class="tab-icon">🏠</div>
+                <div class="tab-label">Home</div>
+            </a>
+            <a class="tab-item" onclick="showScreen('map-screen')">
+                <div class="tab-icon">🗺️</div>
+                <div class="tab-label">Map</div>
+            </a>
+            <a class="tab-item" onclick="showScreen('reports-screen')">
+                <div class="tab-icon">📄</div>
+                <div class="tab-label">Reports</div>
+            </a>
+            <a class="tab-item" onclick="showScreen('create-screen')">
+                <div class="tab-icon">➕</div>
+                <div class="tab-label">Create</div>
+            </a>
+            <a class="tab-item" onclick="showScreen('profile-screen')">
+                <div class="tab-icon">👤</div>
+                <div class="tab-label">Profile</div>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function showScreen(screenId) {
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(screen => screen.classList.add('hidden'));
+            // Show selected screen
+            document.getElementById(screenId).classList.remove('hidden');
+            
+            // Update active tab
+            document.querySelectorAll('.tab-item').forEach(tab => tab.classList.remove('active'));
+            event.target.closest('.tab-item').classList.add('active');
+        }
+        
+        function filterReports(category) {
+            document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            // In a real app, this would filter the reports list
+            console.log('Filtering reports by:', category);
+        }
+        
+        // Category button selection
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('category-btn')) {
+                document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+            }
+            
+            if (e.target.classList.contains('priority-btn')) {
+                document.querySelectorAll('.priority-btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+            }
+        });
+        
+        // Form submission
+        document.getElementById('report-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Report submitted successfully! In the real app, this would be sent to the backend API.');
+        });
+    </script>
+</body>
+</html>

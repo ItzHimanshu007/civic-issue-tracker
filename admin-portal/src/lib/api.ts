@@ -64,7 +64,8 @@ api.interceptors.response.use(
 export interface User {
   id: string;
   name: string;
-  phoneNumber: string;
+  username?: string;
+  phoneNumber?: string;
   email?: string;
   role: 'ADMIN' | 'STAFF' | 'USER';
   isVerified: boolean;
@@ -104,6 +105,18 @@ export interface DashboardStats {
 
 // API Functions
 export const AuthApi = {
+  async login(username: string, password: string) {
+    const res = await api.post<{
+      success: boolean;
+      message?: string;
+      data?: { user: User; tokens: AuthTokens };
+    }>('/api/auth/login', {
+      username,
+      password,
+    });
+    return res.data;
+  },
+
   async sendOTP(phoneNumber: string) {
     const res = await api.post<{ success: boolean; message: string; data?: { otp: string } }>(
       '/api/auth/send-otp',

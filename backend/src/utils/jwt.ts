@@ -4,7 +4,8 @@ import { getRedisClient, isRedisAvailable } from './redis';
 
 export interface JWTPayload {
   userId: string;
-  phoneNumber: string;
+  username?: string;
+  phoneNumber?: string;
   role: 'CITIZEN' | 'STAFF' | 'ADMIN';
   iat?: number;
   exp?: number;
@@ -95,7 +96,8 @@ export const refreshAccessToken = async (refreshToken: string): Promise<TokenPai
     // Generate new token pair
     const newTokenPair = await generateTokenPair({
       userId: decoded.userId,
-      phoneNumber: decoded.phoneNumber,
+      ...(decoded.username && { username: decoded.username }),
+      ...(decoded.phoneNumber && { phoneNumber: decoded.phoneNumber }),
       role: decoded.role,
     });
     

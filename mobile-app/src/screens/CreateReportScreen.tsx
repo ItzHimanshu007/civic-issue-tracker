@@ -26,9 +26,10 @@ const CreateReportScreen: React.FC<Props> = ({ navigation }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Mock location for now - in a real app this would come from GPS
+  // Using Ranchi, Jharkhand coordinates
   const mockLocation = {
-    latitude: 40.7128 + Math.random() * 0.01,
-    longitude: -74.0060 + Math.random() * 0.01,
+    latitude: 23.3441 + Math.random() * 0.01,
+    longitude: 85.3096 + Math.random() * 0.01,
   };
 
   const categories = [

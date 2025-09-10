@@ -32,7 +32,7 @@ const io = new Server(server, {
   cors: {
     origin: process.env.NODE_ENV === 'production' 
       ? ['https://your-domain.com'] 
-      : ['http://localhost:3000', 'http://localhost:19006'],
+      : ['http://localhost:3000', 'http://localhost:3003', 'http://localhost:19006'],
     methods: ['GET', 'POST'],
   },
 });
@@ -44,7 +44,7 @@ app.use(helmet());
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://your-domain.com'] 
-    : ['http://localhost:3000', 'http://localhost:19006'],
+    : ['http://localhost:3000', 'http://localhost:3003', 'http://localhost:19006'],
   credentials: true,
 }));
 

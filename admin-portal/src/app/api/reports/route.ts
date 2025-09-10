@@ -46,16 +46,39 @@ export async function GET(req: NextRequest) {
     if (status && status !== st) continue;
     if (category && category !== cat) continue;
 
+    const jharkhandLocations = [
+      { lat: 23.3441, lng: 85.3096, addr: 'Main Road, Ranchi, Jharkhand' },
+      { lat: 23.3569, lng: 85.3094, addr: 'Morabadi, Ranchi, Jharkhand' },
+      { lat: 23.4241, lng: 85.4419, addr: 'Gonda Hill, Ranchi, Jharkhand' },
+      { lat: 23.3615, lng: 85.3203, addr: 'Upper Bazaar, Ranchi, Jharkhand' },
+      { lat: 22.7596, lng: 86.1517, addr: 'Jamshedpur, Jharkhand' },
+      { lat: 24.6340, lng: 85.0863, addr: 'Dhanbad, Jharkhand' },
+      { lat: 23.6739, lng: 85.3294, addr: 'Hatia, Ranchi, Jharkhand' },
+      { lat: 23.8103, lng: 86.4074, addr: 'Deoghar, Jharkhand' }
+    ];
+    const loc = jharkhandLocations[i % jharkhandLocations.length];
+    const titles = {
+      'POTHOLE': [`सड़क पर बड़ा गड्ढा #${i + 1}`, `Road pothole issue #${i + 1}`],
+      'STREETLIGHT': [`स्ट्रीट लाइट की समस्या #${i + 1}`, `Streetlight problem #${i + 1}`],
+      'GARBAGE': [`कूड़े की समस्या #${i + 1}`, `Garbage issue #${i + 1}`],
+      'WATER_LEAK': [`पानी का रिसाव #${i + 1}`, `Water leak #${i + 1}`],
+      'SEWAGE': [`नाली की समस्या #${i + 1}`, `Sewage problem #${i + 1}`],
+      'ROAD_MAINTENANCE': [`सड़क मरम्मत #${i + 1}`, `Road repair needed #${i + 1}`],
+      'TRAFFIC_SIGNAL': [`ट्रैफिक सिग्नल खराब #${i + 1}`, `Traffic signal fault #${i + 1}`],
+      'PARK_MAINTENANCE': [`पार्क की मरम्मत #${i + 1}`, `Park maintenance #${i + 1}`],
+      'NOISE_POLLUTION': [`शोर की समस्या #${i + 1}`, `Noise complaint #${i + 1}`],
+      'OTHER': [`अन्य समस्या #${i + 1}`, `Other issue #${i + 1}`]
+    };
     mockItems.push({
       id: `mock-${i + 1}`,
-      title: `${cat.replace('_',' ')} issue #${i + 1}`,
-      description: `Auto-generated mock report ${i + 1} for frontend testing (Next API).`,
+      title: titles[cat] ? titles[cat][i % 2] : `${cat.replace('_',' ')} issue #${i + 1}`,
+      description: `Jharkhand civic issue report ${i + 1} - समुदायिक समस्या की रिपोर्ट`,
       category: cat,
       priority: pr,
       status: st,
-      latitude: 40.5 + (i % 100) * 0.005,
-      longitude: -74.2 + (i % 100) * 0.005,
-      address: `${100 + (i % 900)} Main St, Cityville`,
+      latitude: loc.lat + (Math.random() - 0.5) * 0.01,
+      longitude: loc.lng + (Math.random() - 0.5) * 0.01,
+      address: `${loc.addr} ${834001 + (i % 10)}`,
       upvotes: Math.floor(Math.random() * 50),
       created_at: new Date(now - i * 60_000).toISOString(),
     });
@@ -111,9 +134,9 @@ export async function POST(req: NextRequest) {
       userId: 'mobile-user-1',
       user: {
         id: 'mobile-user-1',
-        name: 'Mobile App User',
-        phoneNumber: '+1234567890',
-        email: 'mobile@example.com',
+        name: 'रमेश कुमार',
+        phoneNumber: '+91-9876543215',
+        email: 'ramesh.mobile@gmail.com',
         isVerified: true,
         points: 150,
         badges: [],
