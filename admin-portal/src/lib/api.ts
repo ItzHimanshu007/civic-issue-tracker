@@ -1,9 +1,80 @@
 import axios from 'axios';
+import { useAuthStore } from '../store/authStore';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || '',
   withCredentials: true,
 });
+
+// Request interceptor to add auth token
+api.interceptors.request.use(
+  (config) => {
+    const tokens = useAuthStore.getState().tokens;
+    if (tokens?.accessToken) {
+      config.headers.Authorization = `Bearer ${tokens.accessToken}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor to handle token refresh
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      const tokens = useAuthStore.getState().tokens;
+      if (tokens?.refreshToken) {
+        try {
+          const response = await axios.post(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/auth/refresh-token`,
+            { refreshToken: tokens.refreshToken }
+          );
+          
+          const newTokens = response.data.data.tokens;
+          useAuthStore.getState().setTokens(newTokens);
+          
+          // Retry the original request with new token
+          originalRequest.headers.Authorization = `Bearer ${newTokens.accessToken}`;
+          return api(originalRequest);
+        } catch (refreshError) {
+          // Refresh failed, logout user
+          useAuthStore.getState().logout();
+          window.location.href = '/login';
+          return Promise.reject(refreshError);
+        }
+      } else {
+        // No refresh token, logout user
+        useAuthStore.getState().logout();
+        window.location.href = '/login';
+      }
+    }
+    
+    return Promise.reject(error);
+  }
+);
+
+// Types
+export interface User {
+  id: string;
+  name: string;
+  phoneNumber: string;
+  email?: string;
+  role: 'ADMIN' | 'STAFF' | 'USER';
+  isVerified: boolean;
+  createdAt: string;
+}
+
+export interface AuthTokens {
+  accessToken: string;
+  refreshToken: string;
+}
 
 export interface ReportDto {
   id: string;
@@ -15,12 +86,107 @@ export interface ReportDto {
   latitude: number;
   longitude: number;
   address: string;
+  upvotes?: number;
   created_at: string;
 }
 
+export interface DashboardStats {
+  totalReports: number;
+  resolvedReports: number;
+  pendingReports: number;
+  inProgressReports: number;
+  criticalReports: number;
+  reportsLastWeek: number;
+  reportsLastMonth: number;
+  avgResolutionTime: string;
+  resolutionRate: number;
+}
+
+// API Functions
+export const AuthApi = {
+  async sendOTP(phoneNumber: string) {
+    const res = await api.post<{ success: boolean; message: string; data?: { otp: string } }>(
+      '/api/auth/send-otp',
+      { phoneNumber }
+    );
+    return res.data;
+  },
+
+  async verifyOTP(phoneNumber: string, code: string, name?: string, email?: string) {
+    const res = await api.post<{
+      success: boolean;
+      message?: string;
+      data?: { user: User; tokens: AuthTokens };
+    }>('/api/auth/verify-otp', {
+      phoneNumber,
+      code,
+      name,
+      email,
+    });
+    return res.data;
+  },
+
+  async getMe() {
+    const res = await api.get<{ success: boolean; data: User }>('/api/auth/me');
+    return res.data;
+  },
+
+  async logout() {
+    const res = await api.post<{ success: boolean; message: string }>('/api/auth/logout');
+    return res.data;
+  },
+
+  async refreshToken(refreshToken: string) {
+    const res = await api.post<{
+      success: boolean;
+      data: { tokens: AuthTokens };
+    }>('/api/auth/refresh-token', { refreshToken });
+    return res.data;
+  },
+};
+
 export const ReportsApi = {
-  async list(params?: { status?: string; category?: string; limit?: number; offset?: number; }) {
-    const res = await api.get<{ success: boolean; data: ReportDto[] }>('/api/reports', { params: { mock: 1, ...(params || {}) } });
+  async list(params?: { status?: string; category?: string; limit?: number; offset?: number; mock?: boolean }) {
+    const queryParams = { ...(params || {}) };
+    if (!params?.mock) {
+      delete queryParams.mock;
+    } else {
+      queryParams.mock = true;
+    }
+    
+    const res = await api.get<{ success: boolean; data: ReportDto[] }>('/api/reports', { params: queryParams });
+    return res.data.data;
+  },
+
+  async getById(id: string) {
+    const res = await api.get<{ success: boolean; data: ReportDto }>(`/api/reports/${id}`);
+    return res.data.data;
+  },
+
+  async updateStatus(id: string, status: ReportDto['status'], comment?: string) {
+    const res = await api.patch<{ success: boolean; data: ReportDto }>(`/api/reports/${id}/status`, {
+      status,
+      comment,
+    });
+    return res.data.data;
+  },
+};
+
+export const AnalyticsApi = {
+  async getDashboardStats() {
+    const res = await api.get<{ success: boolean; data: DashboardStats }>('/api/analytics');
+    return res.data.data;
+  },
+
+  async getCategoryBreakdown() {
+    const res = await api.get<{ success: boolean; data: any[] }>('/api/analytics/categories');
+    return res.data.data;
+  },
+
+  async getTrends(period: 'week' | 'month' = 'week') {
+    const res = await api.get<{ success: boolean; data: any[] }>('/api/analytics/trends', {
+      params: { period },
+    });
     return res.data.data;
   },
 };

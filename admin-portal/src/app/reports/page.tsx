@@ -4,6 +4,8 @@ import { useMemo, useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { ReportsApi, type ReportDto } from '@/lib/api';
 
+type ReportRow = ReportDto;
+
 export default function ReportsPage() {
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState<'ALL' | ReportDto['status']>('ALL');
@@ -39,7 +41,7 @@ export default function ReportsPage() {
 
   const exportCsv = () => {
     const header = ['Title', 'Category', 'Priority', 'Status', 'Created'];
-    const data = rows.map(r => [r.title, r.category, r.priority, r.status, r.created]);
+    const data = rows.map(r => [r.title, r.category, r.priority, r.status, r.created_at]);
     const csv = [header, ...data].map(line => line.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -113,7 +115,7 @@ export default function ReportsPage() {
                       r.status === 'IN_PROGRESS' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'
                     }`}>{r.status}</span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{r.created}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(r.created_at).toLocaleDateString()}</td>
                 </tr>
               ))}
               {rows.length === 0 && (

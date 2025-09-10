@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from 'react-hot-toast';
-import Navigation from '@/components/Navigation';
+import RootContent from '@/components/RootContent';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -19,14 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="flex h-screen bg-gray-50">
-          <div className="w-64 flex-shrink-0">
-            <Navigation />
-          </div>
-          <div className="flex-1 overflow-auto">
-            {children}
-          </div>
-        </div>
+        <RootContent>{children}</RootContent>
         <Toaster position="top-right" />
       </body>
     </html>
