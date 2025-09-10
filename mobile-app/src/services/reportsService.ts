@@ -1,7 +1,10 @@
 import { Report, CreateReportRequest, ReportFilters } from '../types';
 
-// Use admin portal's Next.js API for development
-const API_BASE_URL = 'http://localhost:3000/api';
+// Dynamic API URL based on environment
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 
+  (process.env.NODE_ENV === 'production' 
+    ? 'https://civic-tracker-admin.vercel.app/api'
+    : 'http://localhost:3000/api');
 
 const handleApiError = (error: any) => {
   console.error('API Error:', error);

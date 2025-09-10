@@ -8,7 +8,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "jest"
+    "lint:fix": "next lint --fix",
+    "test": "jest",
+    "type-check": "tsc --noEmit",
+    "build:analyze": "ANALYZE=true npm run build",
+    "clean": "rm -rf .next",
+    "build:clean": "npm run clean && npm run build"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.19",

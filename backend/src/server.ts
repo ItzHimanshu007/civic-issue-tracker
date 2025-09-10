@@ -31,7 +31,7 @@ const server = createServer(app);
 const io = new Server(server, {
   cors: {
     origin: process.env.NODE_ENV === 'production' 
-      ? ['https://your-domain.com'] 
+      ? (process.env.CORS_ORIGINS || 'https://civic-tracker-admin.vercel.app,https://civic-tracker-mobile.netlify.app').split(',')
       : ['http://localhost:3000', 'http://localhost:3003', 'http://localhost:19006'],
     methods: ['GET', 'POST'],
   },
@@ -43,7 +43,7 @@ const PORT = process.env.PORT || 3001;
 app.use(helmet());
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-domain.com'] 
+    ? (process.env.CORS_ORIGINS || 'https://civic-tracker-admin.vercel.app,https://civic-tracker-mobile.netlify.app').split(',')
     : ['http://localhost:3000', 'http://localhost:3003', 'http://localhost:19006'],
   credentials: true,
 }));

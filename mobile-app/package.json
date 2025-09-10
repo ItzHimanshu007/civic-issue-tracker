@@ -11,8 +11,13 @@
     "build:web": "expo export --platform web",
     "export:web": "expo export --platform web --output-dir dist",
     "deploy": "node deploy.js",
+    "deploy:prod": "node deploy.js https://civic-tracker-admin.vercel.app",
     "test": "jest",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .expo",
+    "build:clean": "npm run clean && npm run export:web"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.0",

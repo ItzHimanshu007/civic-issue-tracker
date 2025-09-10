@@ -10,27 +10,16 @@ const API_FILE_PATH = path.join(__dirname, 'src/services/reportsService.ts');
 console.log('🚀 Building Mobile App for Web Deployment');
 console.log('=====================================');
 
-// Step 1: Update API URL
-console.log('📝 Step 1: Updating API URL...');
+// Step 1: Create production environment file
+console.log('📝 Step 1: Setting up production environment...');
 
-if (!fs.existsSync(API_FILE_PATH)) {
-  console.error(`❌ File not found: ${API_FILE_PATH}`);
-  process.exit(1);
-}
+const envFilePath = path.join(__dirname, '.env.production');
+const envContent = `NODE_ENV=production
+EXPO_PUBLIC_API_URL=${ADMIN_PORTAL_URL}/api
+`;
 
-let apiFileContent = fs.readFileSync(API_FILE_PATH, 'utf8');
-
-// Replace localhost URL with production URL
-const oldUrl = "const API_BASE_URL = 'http://localhost:3000/api';";
-const newUrl = `const API_BASE_URL = '${ADMIN_PORTAL_URL}/api';`;
-
-if (apiFileContent.includes(oldUrl)) {
-  apiFileContent = apiFileContent.replace(oldUrl, newUrl);
-  fs.writeFileSync(API_FILE_PATH, apiFileContent);
-  console.log(`✅ Updated API URL to: ${ADMIN_PORTAL_URL}/api`);
-} else {
-  console.log('⚠️  API URL already updated or not found. Continuing...');
-}
+fs.writeFileSync(envFilePath, envContent);
+console.log(`✅ Created .env.production with API URL: ${ADMIN_PORTAL_URL}/api`);
 
 // Step 2: Build for web
 console.log('🔨 Step 2: Building for web...');
@@ -52,11 +41,5 @@ console.log('2. Drag and drop the `dist` folder to deploy');
 console.log('3. Or use: `netlify deploy --prod --dir dist`');
 console.log('\n📱 Your mobile app will be available as a web app!');
 
-// Restore original API URL for local development
-setTimeout(() => {
-  console.log('\n🔄 Restoring localhost API URL for local development...');
-  const originalUrl = "const API_BASE_URL = 'http://localhost:3000/api';";
-  apiFileContent = apiFileContent.replace(newUrl, originalUrl);
-  fs.writeFileSync(API_FILE_PATH, apiFileContent);
-  console.log('✅ Restored localhost API URL');
-}, 1000);
+console.log('\n💡 For local development, the app will use localhost automatically');
+console.log('💡 The .env.production file is only used during web builds');

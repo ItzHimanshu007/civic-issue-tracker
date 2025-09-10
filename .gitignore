@@ -140,3 +140,23 @@ coverage/
 
 # TypeScript
 *.tsbuildinfo
+
+# =================
+# 🚀 Deployment Specific
+# =================
+.vercel
+.netlify
+railway-data/
+
+# Mobile app builds
+mobile-app/web-build/
+mobile-app/ios/
+ mobile-app/android/
+
+# Keep important config files
+!.env.example
+!.env.production
+!railway.json
+!vercel.json
+!Dockerfile
+!railway.toml
