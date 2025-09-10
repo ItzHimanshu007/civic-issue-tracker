@@ -173,7 +173,7 @@ export class GeoService {
     try {
       const { categories, dateFrom, dateTo, gridSize = 0.005 } = options; // ~500m grid
 
-      let whereConditions = [
+      let whereConditions: string[] = [
         `latitude BETWEEN $1 AND $2`,
         `longitude BETWEEN $3 AND $4`
       ];
@@ -237,7 +237,7 @@ export class GeoService {
     try {
       const { categories, excludeReportId, limit = 50 } = options;
 
-      let whereConditions = [];
+      let whereConditions: string[] = [];
       const params: any[] = [center.latitude, center.longitude, radiusKm];
 
       if (categories && categories.length > 0) {
@@ -388,7 +388,7 @@ export class GeoService {
         dateTo
       } = options;
 
-      let whereConditions = [];
+      let whereConditions: string[] = [];
       const params: any[] = [];
 
       if (category) {

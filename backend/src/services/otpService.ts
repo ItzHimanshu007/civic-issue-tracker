@@ -1,6 +1,6 @@
 import twilio from 'twilio';
 import { logger } from '../utils/logger';
-import { setCacheJSON, getCacheJSON, deleteCache } from '../utils/redis';
+import { setCacheJSON, getCacheJSON, deleteCache, isRedisAvailable } from '../utils/redis';
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -25,6 +25,10 @@ export class OTPService {
   private readonly MAX_ATTEMPTS = 3;
   private readonly OTP_EXPIRY = 10 * 60; // 10 minutes in seconds
   private readonly RATE_LIMIT_WINDOW = 60; // 1 minute
+  
+  // In-memory storage for development when Redis is not available
+  private memoryCache = new Map<string, { data: any; expiresAt: number }>();
+  private rateLimitCache = new Map<string, { attempts: number; expiresAt: number }>();
 
   constructor() {
     if (accountSid && authToken) {
@@ -32,6 +36,90 @@ export class OTPService {
       logger.info('Twilio client initialized');
     } else {
       logger.warn('Twilio credentials not provided, using mock OTP');
+    }
+  }
+  
+  /**
+   * Clean expired entries from memory cache
+   */
+  private cleanExpiredEntries(): void {
+    const now = Date.now();
+    for (const [key, value] of this.memoryCache.entries()) {
+      if (value.expiresAt < now) {
+        this.memoryCache.delete(key);
+      }
+    }
+    for (const [key, value] of this.rateLimitCache.entries()) {
+      if (value.expiresAt < now) {
+        this.rateLimitCache.delete(key);
+      }
+    }
+  }
+  
+  /**
+   * Set data in cache (Redis or memory fallback)
+   */
+  private async setCacheData(key: string, data: any, expireInSeconds: number): Promise<void> {
+    if (isRedisAvailable()) {
+      await setCacheJSON(key, data, expireInSeconds);
+    } else {
+      this.cleanExpiredEntries();
+      this.memoryCache.set(key, {
+        data,
+        expiresAt: Date.now() + (expireInSeconds * 1000)
+      });
+    }
+  }
+  
+  /**
+   * Get data from cache (Redis or memory fallback)
+   */
+  private async getCacheData<T>(key: string): Promise<T | null> {
+    if (isRedisAvailable()) {
+      return await getCacheJSON<T>(key);
+    } else {
+      this.cleanExpiredEntries();
+      const entry = this.memoryCache.get(key);
+      return entry && entry.expiresAt > Date.now() ? entry.data as T : null;
+    }
+  }
+  
+  /**
+   * Delete data from cache (Redis or memory fallback)
+   */
+  private async deleteCacheData(key: string): Promise<void> {
+    if (isRedisAvailable()) {
+      await deleteCache(key);
+    } else {
+      this.memoryCache.delete(key);
+    }
+  }
+  
+  /**
+   * Set rate limit data
+   */
+  private async setRateLimitData(key: string, attempts: number, expireInSeconds: number): Promise<void> {
+    if (isRedisAvailable()) {
+      await setCacheJSON(key, attempts, expireInSeconds);
+    } else {
+      this.cleanExpiredEntries();
+      this.rateLimitCache.set(key, {
+        attempts,
+        expiresAt: Date.now() + (expireInSeconds * 1000)
+      });
+    }
+  }
+  
+  /**
+   * Get rate limit data
+   */
+  private async getRateLimitData(key: string): Promise<number | null> {
+    if (isRedisAvailable()) {
+      return await getCacheJSON<number>(key);
+    } else {
+      this.cleanExpiredEntries();
+      const entry = this.rateLimitCache.get(key);
+      return entry && entry.expiresAt > Date.now() ? entry.attempts : null;
     }
   }
 
@@ -47,7 +135,7 @@ export class OTPService {
    */
   private async checkRateLimit(phoneNumber: string): Promise<boolean> {
     const rateLimitKey = `otp_rate_limit:${phoneNumber}`;
-    const attempts = await getCacheJSON<number>(rateLimitKey);
+    const attempts = await this.getRateLimitData(rateLimitKey);
     
     if (attempts && attempts >= 5) {
       return false; // Rate limited
@@ -61,8 +149,8 @@ export class OTPService {
    */
   private async updateRateLimit(phoneNumber: string): Promise<void> {
     const rateLimitKey = `otp_rate_limit:${phoneNumber}`;
-    const attempts = await getCacheJSON<number>(rateLimitKey) || 0;
-    await setCacheJSON(rateLimitKey, attempts + 1, this.RATE_LIMIT_WINDOW);
+    const attempts = await this.getRateLimitData(rateLimitKey) || 0;
+    await this.setRateLimitData(rateLimitKey, attempts + 1, this.RATE_LIMIT_WINDOW);
   }
 
   /**
@@ -86,7 +174,7 @@ export class OTPService {
       const otpCode = this.generateOTPCode();
       const otpKey = `otp:${phoneNumber}`;
 
-      // Store OTP data in Redis
+      // Store OTP data in cache
       const otpData: OTPData = {
         code: otpCode,
         phoneNumber,
@@ -95,7 +183,7 @@ export class OTPService {
         type
       };
 
-      await setCacheJSON(otpKey, otpData, this.OTP_EXPIRY);
+      await this.setCacheData(otpKey, otpData, this.OTP_EXPIRY);
 
       // Send SMS
       if (this.twilioClient) {
@@ -164,7 +252,7 @@ export class OTPService {
         type: 'login'
       };
 
-      await setCacheJSON(otpKey, otpData, this.OTP_EXPIRY);
+      await this.setCacheData(otpKey, otpData, this.OTP_EXPIRY);
 
       // Create TwiML for voice message
       const twiml = `
@@ -202,7 +290,7 @@ export class OTPService {
   async verifyOTP(phoneNumber: string, code: string): Promise<OTPResult> {
     try {
       const otpKey = `otp:${phoneNumber}`;
-      const otpData = await getCacheJSON<OTPData>(otpKey);
+      const otpData = await this.getCacheData<OTPData>(otpKey);
 
       if (!otpData) {
         return {
@@ -213,7 +301,7 @@ export class OTPService {
 
       // Check attempts
       if (otpData.attempts >= this.MAX_ATTEMPTS) {
-        await deleteCache(otpKey);
+        await this.deleteCacheData(otpKey);
         return {
           success: false,
           message: 'Too many failed attempts. Please request a new OTP.'
@@ -223,7 +311,7 @@ export class OTPService {
       // Verify code
       if (otpData.code !== code) {
         otpData.attempts += 1;
-        await setCacheJSON(otpKey, otpData, this.OTP_EXPIRY);
+        await this.setCacheData(otpKey, otpData, this.OTP_EXPIRY);
         
         return {
           success: false,
@@ -232,7 +320,7 @@ export class OTPService {
       }
 
       // OTP verified successfully
-      await deleteCache(otpKey);
+      await this.deleteCacheData(otpKey);
       
       return {
         success: true,

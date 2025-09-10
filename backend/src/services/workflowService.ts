@@ -371,7 +371,7 @@ export class WorkflowService {
   async getAvailableStaff(departmentId?: string): Promise<any[]> {
     try {
       let whereClause = 'WHERE s.is_active = true AND u.is_active = true';
-      const params = [];
+      const params: any[] = [];
       
       if (departmentId) {
         params.push(departmentId);

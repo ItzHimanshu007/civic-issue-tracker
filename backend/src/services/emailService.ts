@@ -521,7 +521,7 @@ export class EmailService {
    * Test email configuration
    */
   async testConfiguration(testEmail: string): Promise<{ success: boolean; results: any[] }> {
-    const results = [];
+    const results: any[] = [];
     
     for (const provider of this.providers) {
       try {
@@ -547,7 +547,7 @@ export class EmailService {
       }
     }
     
-    const success = results.some(r => r.success);
+    const success = results.some((r: any) => r.success);
     return { success, results };
   }
 }
