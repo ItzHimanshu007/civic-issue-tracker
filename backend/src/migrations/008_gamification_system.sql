@@ -11,7 +11,7 @@ CREATE INDEX IF NOT EXISTS idx_users_points ON users(points DESC);
 
 -- Points history table to track all point transactions
 CREATE TABLE IF NOT EXISTS points_history (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     action VARCHAR(50) NOT NULL,
     points_awarded INTEGER NOT NULL,
@@ -25,28 +25,20 @@ CREATE INDEX IF NOT EXISTS idx_points_history_user_id ON points_history(user_id)
 CREATE INDEX IF NOT EXISTS idx_points_history_action ON points_history(action);
 CREATE INDEX IF NOT EXISTS idx_points_history_created_at ON points_history(created_at);
 
--- Badges table to define available badges
-CREATE TABLE IF NOT EXISTS badges (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(255) UNIQUE NOT NULL,
-    description TEXT NOT NULL,
-    icon_url TEXT,
-    points_required INTEGER DEFAULT 0,
-    condition_type VARCHAR(100) NOT NULL,
-    rarity VARCHAR(20) DEFAULT 'COMMON' CHECK (rarity IN ('COMMON', 'RARE', 'EPIC', 'LEGENDARY')),
-    is_active BOOLEAN DEFAULT true,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- Badges table already exists from schema migration, just add missing columns if needed
+ALTER TABLE badges 
+ADD COLUMN IF NOT EXISTS condition_type VARCHAR(100),
+ADD COLUMN IF NOT EXISTS rarity VARCHAR(20) DEFAULT 'COMMON' CHECK (rarity IN ('COMMON', 'RARE', 'EPIC', 'LEGENDARY')),
+ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
 
--- User badges table to track earned badges
-CREATE TABLE IF NOT EXISTS user_badges (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    badge_id UUID NOT NULL REFERENCES badges(id) ON DELETE CASCADE,
-    earned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(user_id, badge_id)
-);
+-- Make sure name column is unique
+ALTER TABLE badges 
+DROP CONSTRAINT IF EXISTS badges_name_key;
+ALTER TABLE badges 
+ADD CONSTRAINT badges_name_unique UNIQUE (name);
+
+-- User badges table already exists from schema migration
+-- No need to recreate, just ensure it has the right structure
 
 CREATE INDEX IF NOT EXISTS idx_user_badges_user_id ON user_badges(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_badges_earned_at ON user_badges(earned_at);

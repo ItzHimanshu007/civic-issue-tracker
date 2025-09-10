@@ -51,7 +51,7 @@ export class OAuthService {
         return null;
       }
 
-      const tokenInfo: GoogleTokenInfo = await response.json();
+      const tokenInfo = await response.json() as GoogleTokenInfo;
       return tokenInfo;
     } catch (error) {
       logger.error('Google token verification error:', error);
@@ -71,7 +71,7 @@ export class OAuthService {
         return null;
       }
 
-      const tokenInfo: FacebookTokenInfo = await response.json();
+      const tokenInfo = await response.json() as FacebookTokenInfo;
       return tokenInfo;
     } catch (error) {
       logger.error('Facebook token verification error:', error);

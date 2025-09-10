@@ -129,7 +129,7 @@ export class NotificationService {
       logger.error('Error sending notification:', error);
       return {
         success: false,
-        error: error.message
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
       };
     }
   }
@@ -206,7 +206,7 @@ export class NotificationService {
       logger.error('Error sending templated notification:', error);
       return {
         success: false,
-        error: error.message
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
       };
     }
   }
@@ -271,7 +271,7 @@ export class NotificationService {
       logger.error('Error scheduling notification:', error);
       return {
         success: false,
-        error: error.message
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
       };
     }
   }
@@ -314,7 +314,7 @@ export class NotificationService {
           await this.sendNotification(options);
         } catch (error) {
           logger.error(`Error processing scheduled notification ${notification.id}:`, error);
-          await this.updateNotificationStatus(notification.id, 'FAILED', error.message);
+          await this.updateNotificationStatus(notification.id, 'FAILED', error instanceof Error ? error.message : 'Unknown error occurred');
         }
       }
     } catch (error) {
@@ -369,7 +369,7 @@ export class NotificationService {
       return { success: true };
     } catch (error) {
       logger.error('Error updating user preferences:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
   }
 
@@ -427,7 +427,7 @@ export class NotificationService {
       return { success: true };
     } catch (error) {
       logger.error('Error marking notification as read:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
   }
 
@@ -514,7 +514,7 @@ export class NotificationService {
 
       return result;
     } catch (error) {
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
   }
 
@@ -542,7 +542,7 @@ export class NotificationService {
 
       return result;
     } catch (error) {
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
   }
 
@@ -566,7 +566,7 @@ export class NotificationService {
 
       return { success: true };
     } catch (error) {
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
   }
 

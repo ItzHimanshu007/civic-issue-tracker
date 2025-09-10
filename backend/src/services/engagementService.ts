@@ -239,7 +239,7 @@ export class EngagementService {
       const commentMap = new Map<string, CommentData>();
       const rootComments: CommentData[] = [];
 
-      result.rows.forEach(row => {
+      result.rows.forEach((row: any) => {
         const comment: CommentData = {
           id: row.id,
           content: row.content,

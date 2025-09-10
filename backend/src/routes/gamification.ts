@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { body, query, validationResult } from 'express-validator';
 import { auth } from '../middleware/auth';
 import { gamificationService } from '../services/gamificationService';
@@ -33,7 +33,7 @@ router.get('/profile', auth, async (req, res) => {
 router.get('/leaderboard', [
   query('timeframe').optional().isIn(['all', 'month', 'week']).withMessage('Invalid timeframe'),
   query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limit must be between 1 and 100'),
-], async (req, res) => {
+], async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -49,7 +49,7 @@ router.get('/leaderboard', [
 
     const leaderboard = await gamificationService.getLeaderboard(timeframe, limit);
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         timeframe,
@@ -58,7 +58,7 @@ router.get('/leaderboard', [
     });
   } catch (error) {
     logger.error('Error getting leaderboard:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to get leaderboard'
     });
@@ -72,13 +72,13 @@ router.get('/badges', async (req, res) => {
   try {
     const badges = await gamificationService.getAllBadges();
 
-    res.json({
+    return res.json({
       success: true,
       data: badges
     });
   } catch (error) {
     logger.error('Error getting badges:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to get badges'
     });
@@ -93,7 +93,7 @@ router.post('/award-points', auth, [
   body('action').notEmpty().withMessage('Action is required'),
   body('multiplier').optional().isFloat({ min: 0.1, max: 10 }).withMessage('Multiplier must be between 0.1 and 10'),
   body('metadata').optional().isObject().withMessage('Metadata must be an object')
-], async (req, res) => {
+], async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -105,7 +105,7 @@ router.post('/award-points', auth, [
     }
 
     // Check if user is admin or has appropriate permissions
-    if (req.user!.role !== 'ADMIN' && req.user!.role !== 'SUPER_ADMIN') {
+    if (req.user!.role !== 'ADMIN') {
       return res.status(403).json({
         success: false,
         message: 'Admin access required'
@@ -120,13 +120,13 @@ router.post('/award-points', auth, [
       awardedByRole: req.user!.role
     });
 
-    res.json({
+    return res.json({
       success: true,
       data: result
     });
   } catch (error) {
     logger.error('Error manually awarding points:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to award points'
     });
@@ -139,7 +139,7 @@ router.post('/award-points', auth, [
 router.get('/points-history', auth, [
   query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limit must be between 1 and 100'),
   query('offset').optional().isInt({ min: 0 }).withMessage('Offset must be non-negative')
-], async (req, res) => {
+], async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -173,7 +173,7 @@ router.get('/points-history', auth, [
       [userId]
     );
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         history: result.rows,
@@ -187,7 +187,7 @@ router.get('/points-history', auth, [
     });
   } catch (error) {
     logger.error('Error getting points history:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to get points history'
     });
@@ -200,7 +200,7 @@ router.get('/points-history', auth, [
 router.get('/achievements', auth, [
   query('type').optional().isIn(['BADGE', 'LEVEL', 'MILESTONE']).withMessage('Invalid achievement type'),
   query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limit must be between 1 and 100')
-], async (req, res) => {
+], async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -232,13 +232,13 @@ router.get('/achievements', auth, [
       [...params, limit]
     );
 
-    res.json({
+    return res.json({
       success: true,
       data: result.rows
     });
   } catch (error) {
     logger.error('Error getting achievements:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to get achievements'
     });
@@ -267,13 +267,13 @@ router.get('/streaks', auth, async (req, res) => {
       streak_start_date: null
     };
 
-    res.json({
+    return res.json({
       success: true,
       data: streaks
     });
   } catch (error) {
     logger.error('Error getting user streaks:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to get user streaks'
     });
@@ -286,7 +286,7 @@ router.get('/streaks', auth, async (req, res) => {
 router.get('/stats', auth, async (req, res) => {
   try {
     // Check if user is admin
-    if (req.user!.role !== 'ADMIN' && req.user!.role !== 'SUPER_ADMIN') {
+    if (req.user!.role !== 'ADMIN') {
       return res.status(403).json({
         success: false,
         message: 'Admin access required'
@@ -313,7 +313,7 @@ router.get('/stats', auth, async (req, res) => {
              ORDER BY earned_count DESC`)
     ]);
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         userStats: {
@@ -331,7 +331,7 @@ router.get('/stats', auth, async (req, res) => {
     });
   } catch (error) {
     logger.error('Error getting gamification stats:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to get gamification statistics'
     });

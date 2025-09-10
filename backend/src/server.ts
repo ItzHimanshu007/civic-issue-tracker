@@ -118,9 +118,9 @@ const startServer = async () => {
     await connectDatabase();
     logger.info('Connected to database');
 
-    // Connect to Redis
+    // Connect to Redis (optional)
     await connectRedis();
-    logger.info('Connected to Redis');
+    // Redis connection status is logged within connectRedis()
 
     // Start job scheduler
     jobScheduler.start();

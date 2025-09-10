@@ -35,9 +35,9 @@ router.get('/', async (req: Request, res: Response) => {
        ORDER BY d.name`
     );
     
-    res.json({ success: true, data: result.rows });
+    return res.json({ success: true, data: result.rows });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Failed to fetch departments' });
+    return res.status(500).json({ success: false, message: 'Failed to fetch departments' });
   }
 });
 
@@ -54,12 +54,12 @@ router.post('/', authenticateToken, authorizeRoles('ADMIN'), async (req: Request
       [value.name, value.description || null, value.contactEmail || null, value.contactPhone || null]
     );
     
-    res.status(201).json({ success: true, data: result.rows[0] });
+    return res.status(201).json({ success: true, data: result.rows[0] });
   } catch (error: any) {
     if (error.code === '23505') {
-      res.status(409).json({ success: false, message: 'Department name already exists' });
+      return res.status(409).json({ success: false, message: 'Department name already exists' });
     } else {
-      res.status(500).json({ success: false, message: 'Failed to create department' });
+      return res.status(500).json({ success: false, message: 'Failed to create department' });
     }
   }
 });
@@ -93,9 +93,9 @@ router.get('/:id', async (req: Request, res: Response) => {
       staff: staffResult.rows,
     };
     
-    res.json({ success: true, data: department });
+    return res.json({ success: true, data: department });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Failed to fetch department' });
+    return res.status(500).json({ success: false, message: 'Failed to fetch department' });
   }
 });
 
@@ -118,9 +118,9 @@ router.put('/:id', authenticateToken, authorizeRoles('ADMIN'), async (req: Reque
       return res.status(404).json({ success: false, message: 'Department not found' });
     }
     
-    res.json({ success: true, data: result.rows[0] });
+    return res.json({ success: true, data: result.rows[0] });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Failed to update department' });
+    return res.status(500).json({ success: false, message: 'Failed to update department' });
   }
 });
 
@@ -144,9 +144,9 @@ router.delete('/:id', authenticateToken, authorizeRoles('ADMIN'), async (req: Re
       [id]
     );
     
-    res.json({ success: true, message: 'Department deactivated' });
+    return res.json({ success: true, message: 'Department deactivated' });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Failed to deactivate department' });
+    return res.status(500).json({ success: false, message: 'Failed to deactivate department' });
   }
 });
 
@@ -192,9 +192,9 @@ router.post('/:id/staff', authenticateToken, authorizeRoles('ADMIN'), async (req
       return staffResult.rows[0];
     });
     
-    res.status(201).json({ success: true, data: result });
+    return res.status(201).json({ success: true, data: result });
   } catch (error: any) {
-    res.status(400).json({ success: false, message: error.message || 'Failed to add staff' });
+    return res.status(400).json({ success: false, message: error.message || 'Failed to add staff' });
   }
 });
 

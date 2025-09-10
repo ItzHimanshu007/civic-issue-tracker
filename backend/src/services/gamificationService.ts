@@ -1,6 +1,7 @@
 import { logger } from '../utils/logger';
 import { query, withTransaction } from '../utils/database';
-import { io } from '../server';
+// Import io dynamically to avoid circular dependency
+let io: any;
 
 interface PointsAction {
   action: string;
@@ -138,12 +139,20 @@ export class GamificationService {
         const achievements = await this.checkForAchievements(userId, newTotal, action, client);
 
         // Real-time notification
-        io.to(`user_${userId}`).emit('points_awarded', {
-          action: pointsConfig.description,
-          pointsAwarded,
-          newTotal,
-          achievements
-        });
+        try {
+          if (!io) {
+            const serverModule = await import('../server');
+            io = serverModule.io;
+          }
+          io?.to(`user_${userId}`).emit('points_awarded', {
+            action: pointsConfig.description,
+            pointsAwarded,
+            newTotal,
+            achievements
+          });
+        } catch (ioError) {
+          logger.warn('Could not send real-time notification:', ioError);
+        }
         
         // Send achievement notifications
         if (achievements.length > 0) {
@@ -551,7 +560,7 @@ export class GamificationService {
         LIMIT $1
       `, [limit]);
 
-      return result.rows.map(row => {
+      return result.rows.map((row: any) => {
         const points = parseInt(row.total_points) || 0;
         const level = this.calculateLevel(points);
         const levelInfo = this.levelSystem.find(l => l.level === level);

@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { body, query, validationResult } from 'express-validator';
 import { auth } from '../middleware/auth';
 import { notificationService } from '../services/notificationService';
@@ -11,7 +11,7 @@ const router = express.Router();
 /**
  * GET /api/notifications/preferences - Get user notification preferences
  */
-router.get('/preferences', auth, async (req, res) => {
+router.get('/preferences', auth, async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
     const preferences = await notificationService.getUserPreferences(userId);
@@ -23,13 +23,13 @@ router.get('/preferences', auth, async (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       data: preferences
     });
   } catch (error) {
     logger.error('Error getting notification preferences:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to get notification preferences'
     });
@@ -58,7 +58,7 @@ router.put('/preferences', auth, [
   body('quietHoursStart').optional().matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
   body('quietHoursEnd').optional().matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
   body('timezone').optional().isString().isLength({ min: 1, max: 50 })
-], async (req, res) => {
+], async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -79,13 +79,13 @@ router.put('/preferences', auth, [
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Preferences updated successfully'
     });
   } catch (error) {
     logger.error('Error updating notification preferences:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to update notification preferences'
     });
@@ -98,7 +98,7 @@ router.put('/preferences', auth, [
 router.get('/history', auth, [
   query('limit').optional().isInt({ min: 1, max: 100 }),
   query('offset').optional().isInt({ min: 0 })
-], async (req, res) => {
+], async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -115,7 +115,7 @@ router.get('/history', auth, [
 
     const history = await notificationService.getUserNotificationHistory(userId, limit, offset);
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         notifications: history.notifications,
@@ -129,7 +129,7 @@ router.get('/history', auth, [
     });
   } catch (error) {
     logger.error('Error getting notification history:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to get notification history'
     });
@@ -139,7 +139,7 @@ router.get('/history', auth, [
 /**
  * POST /api/notifications/:id/read - Mark notification as read
  */
-router.post('/:id/read', auth, async (req, res) => {
+router.post('/:id/read', auth, async (req: Request, res: Response) => {
   try {
     const notificationId = req.params.id;
     const userId = req.user!.id;
@@ -153,13 +153,13 @@ router.post('/:id/read', auth, async (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Notification marked as read'
     });
   } catch (error) {
     logger.error('Error marking notification as read:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to mark notification as read'
     });
@@ -175,7 +175,7 @@ router.post('/devices/register', auth, [
   body('deviceName').optional().isString().isLength({ max: 255 }),
   body('appVersion').optional().isString().isLength({ max: 50 }),
   body('osVersion').optional().isString().isLength({ max: 50 })
-], async (req, res) => {
+], async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -205,13 +205,13 @@ router.post('/devices/register', auth, [
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Device registered successfully'
     });
   } catch (error) {
     logger.error('Error registering device:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to register device'
     });
@@ -221,7 +221,7 @@ router.post('/devices/register', auth, [
 /**
  * DELETE /api/notifications/devices/:token - Unregister device from push notifications
  */
-router.delete('/devices/:token', auth, async (req, res) => {
+router.delete('/devices/:token', auth, async (req: Request, res: Response) => {
   try {
     const deviceToken = req.params.token;
 
@@ -234,13 +234,13 @@ router.delete('/devices/:token', auth, async (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Device unregistered successfully'
     });
   } catch (error) {
     logger.error('Error unregistering device:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to unregister device'
     });
@@ -256,13 +256,13 @@ router.post('/devices/test', auth, async (req, res) => {
 
     const result = await pushNotificationService.testConfiguration(userId);
 
-    res.json({
+    return res.json({
       success: true,
       data: result
     });
   } catch (error) {
     logger.error('Error testing push notification:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to test push notification'
     });
@@ -274,7 +274,7 @@ router.post('/devices/test', auth, async (req, res) => {
  */
 router.post('/topics/subscribe', auth, [
   body('topic').notEmpty().withMessage('Topic is required')
-], async (req, res) => {
+], async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -297,13 +297,13 @@ router.post('/topics/subscribe', auth, [
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       message: `Subscribed to topic: ${topic}`
     });
   } catch (error) {
     logger.error('Error subscribing to topic:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to subscribe to topic'
     });
@@ -315,7 +315,7 @@ router.post('/topics/subscribe', auth, [
  */
 router.post('/topics/unsubscribe', auth, [
   body('topic').notEmpty().withMessage('Topic is required')
-], async (req, res) => {
+], async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -338,13 +338,13 @@ router.post('/topics/unsubscribe', auth, [
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       message: `Unsubscribed from topic: ${topic}`
     });
   } catch (error) {
     logger.error('Error unsubscribing from topic:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to unsubscribe from topic'
     });
@@ -366,7 +366,7 @@ router.post('/send', auth, [
   body('data').optional().isObject(),
   body('priority').optional().isIn(['LOW', 'NORMAL', 'HIGH', 'URGENT']),
   body('scheduledAt').optional().isISO8601()
-], async (req, res) => {
+], async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -411,13 +411,13 @@ router.post('/send', auth, [
 
     const result = await notificationService.sendBulkNotifications(notifications);
 
-    res.json({
+    return res.json({
       success: true,
       data: result
     });
   } catch (error) {
     logger.error('Error sending notification:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to send notification'
     });
@@ -429,7 +429,7 @@ router.post('/send', auth, [
  */
 router.get('/stats', auth, [
   query('days').optional().isInt({ min: 1, max: 365 })
-], async (req, res) => {
+], async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -451,13 +451,13 @@ router.get('/stats', auth, [
     const days = parseInt(req.query.days as string) || 7;
     const stats = await notificationService.getNotificationStats(days);
 
-    res.json({
+    return res.json({
       success: true,
       data: stats
     });
   } catch (error) {
     logger.error('Error getting notification stats:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to get notification statistics'
     });
@@ -469,7 +469,7 @@ router.get('/stats', auth, [
  */
 router.post('/email/test', auth, [
   body('email').isEmail().withMessage('Valid email is required')
-], async (req, res) => {
+], async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -491,13 +491,13 @@ router.post('/email/test', auth, [
     const { email } = req.body;
     const result = await emailService.testConfiguration(email);
 
-    res.json({
+    return res.json({
       success: true,
       data: result
     });
   } catch (error) {
     logger.error('Error testing email configuration:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to test email configuration'
     });
@@ -507,26 +507,26 @@ router.post('/email/test', auth, [
 /**
  * POST /api/notifications/webhooks/sendgrid - SendGrid webhook
  */
-router.post('/webhooks/sendgrid', async (req, res) => {
+router.post('/webhooks/sendgrid', async (req: Request, res: Response) => {
   try {
     await emailService.processDeliveryWebhook('SendGrid', req.body);
-    res.status(200).send('OK');
+    return res.status(200).send('OK');
   } catch (error) {
     logger.error('Error processing SendGrid webhook:', error);
-    res.status(500).send('Error');
+    return res.status(500).send('Error');
   }
 });
 
 /**
  * POST /api/notifications/webhooks/aws-ses - AWS SES webhook
  */
-router.post('/webhooks/aws-ses', async (req, res) => {
+router.post('/webhooks/aws-ses', async (req: Request, res: Response) => {
   try {
     await emailService.processDeliveryWebhook('AWS SES', req.body);
-    res.status(200).send('OK');
+    return res.status(200).send('OK');
   } catch (error) {
     logger.error('Error processing AWS SES webhook:', error);
-    res.status(500).send('Error');
+    return res.status(500).send('Error');
   }
 });
 

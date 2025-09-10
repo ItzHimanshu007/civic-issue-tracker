@@ -1,12 +1,21 @@
 import { createClient, RedisClientType } from 'redis';
 import { logger } from './logger';
 
-let redisClient: RedisClientType;
+let redisClient: RedisClientType | null = null;
+let isRedisEnabled = false;
 
 export const connectRedis = async (): Promise<void> => {
+  const redisUrl = process.env.REDIS_URL;
+  
+  if (!redisUrl || redisUrl.trim() === '') {
+    logger.info('Redis URL not configured, skipping Redis initialization');
+    isRedisEnabled = false;
+    return;
+  }
+
   try {
     redisClient = createClient({
-      url: process.env.REDIS_URL || 'redis://localhost:6379',
+      url: redisUrl,
     });
 
     redisClient.on('error', (error) => {
@@ -26,48 +35,65 @@ export const connectRedis = async (): Promise<void> => {
     });
 
     await redisClient.connect();
+    isRedisEnabled = true;
+    logger.info('Redis initialization completed');
   } catch (error) {
     logger.error('Failed to connect to Redis:', error);
-    throw error;
+    isRedisEnabled = false;
+    // Don't throw error - allow server to continue without Redis
+    logger.warn('Server will continue without Redis caching');
   }
 };
 
-export const getRedisClient = (): RedisClientType => {
-  if (!redisClient) {
-    throw new Error('Redis client not initialized. Call connectRedis first.');
-  }
+export const getRedisClient = (): RedisClientType | null => {
   return redisClient;
+};
+
+export const isRedisAvailable = (): boolean => {
+  return isRedisEnabled && redisClient !== null;
 };
 
 // Cache helper functions
 export const setCache = async (key: string, value: string, expireInSeconds?: number): Promise<void> => {
+  if (!isRedisAvailable()) {
+    return; // Silently skip if Redis is not available
+  }
+  
   try {
     if (expireInSeconds) {
-      await redisClient.setEx(key, expireInSeconds, value);
+      await redisClient!.setEx(key, expireInSeconds, value);
     } else {
-      await redisClient.set(key, value);
+      await redisClient!.set(key, value);
     }
   } catch (error) {
     logger.error('Redis set error:', error);
-    throw error;
+    // Don't throw error - just log it
   }
 };
 
 export const getCache = async (key: string): Promise<string | null> => {
+  if (!isRedisAvailable()) {
+    return null; // Return null if Redis is not available
+  }
+  
   try {
-    return await redisClient.get(key);
+    return await redisClient!.get(key);
   } catch (error) {
     logger.error('Redis get error:', error);
-    throw error;
+    return null; // Return null on error instead of throwing
   }
 };
 
 export const deleteCache = async (key: string): Promise<void> => {
+  if (!isRedisAvailable()) {
+    return; // Silently skip if Redis is not available
+  }
+  
   try {
-    await redisClient.del(key);
+    await redisClient!.del(key);
   } catch (error) {
     logger.error('Redis delete error:', error);
-    throw error;
+    // Don't throw error - just log it
   }
 };
 

@@ -205,7 +205,7 @@ export class EmailService {
         
         // Log failed delivery
         if (notificationId) {
-          await this.logEmailDelivery(notificationId, provider.name, null, 'failed', error.message);
+          await this.logEmailDelivery(notificationId, provider.name, null, 'failed', error instanceof Error ? error.message : 'Unknown error occurred');
         }
 
         // Continue to next provider if available
@@ -213,7 +213,7 @@ export class EmailService {
           // This was the last provider
           return {
             success: false,
-            error: `All email providers failed. Last error: ${error.message}`
+            error: `All email providers failed. Last error: ${error instanceof Error ? error.message : 'Unknown error occurred'}`
           };
         }
       }
@@ -305,7 +305,7 @@ export class EmailService {
       logger.error('Error sending templated email:', error);
       return {
         success: false,
-        error: error.message
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
       };
     }
   }
@@ -542,7 +542,7 @@ export class EmailService {
         results.push({
           provider: provider.name,
           success: false,
-          error: error.message
+          error: error instanceof Error ? error.message : 'Unknown error occurred'
         });
       }
     }

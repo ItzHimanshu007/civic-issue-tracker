@@ -74,7 +74,7 @@ router.get('/categories', authenticateToken, async (req: Request, res: Response)
       ORDER BY total DESC
     `);
     
-    const data = result.rows.map(row => ({
+    const data = result.rows.map((row: any) => ({
       category: row.category,
       total: parseInt(row.total),
       resolved: parseInt(row.resolved),
@@ -138,7 +138,7 @@ router.get('/departments', authenticateToken, authorizeRoles('STAFF', 'ADMIN'), 
       ORDER BY total_reports DESC
     `);
     
-    const data = result.rows.map(row => ({
+    const data = result.rows.map((row: any) => ({
       departmentName: row.department_name,
       totalReports: parseInt(row.total_reports) || 0,
       resolvedReports: parseInt(row.resolved_reports) || 0,

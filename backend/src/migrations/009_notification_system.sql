@@ -69,8 +69,11 @@ CREATE TABLE IF NOT EXISTS user_devices (
 CREATE INDEX IF NOT EXISTS idx_user_devices_user_id ON user_devices(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_devices_active ON user_devices(is_active);
 
+-- First rename the existing simple notifications table to avoid conflicts
+ALTER TABLE notifications RENAME TO notifications_simple;
+
 -- Notifications queue and history
-CREATE TABLE IF NOT EXISTS notifications (
+CREATE TABLE notifications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     template_name VARCHAR(100) REFERENCES notification_templates(name),

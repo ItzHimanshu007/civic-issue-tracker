@@ -1,9 +1,12 @@
+'use client';
+
 import { 
   ChartBarIcon, 
   ExclamationTriangleIcon, 
   CheckCircleIcon, 
   ClockIcon 
 } from '@heroicons/react/24/outline';
+import { toast } from 'react-hot-toast';
 
 export default function Dashboard() {
   const stats = [
@@ -36,6 +39,13 @@ export default function Dashboard() {
       bgColor: 'bg-green-100',
     },
   ];
+  
+  const clickStat = (name: string) => {
+    if (name === 'Total Reports') toast('View all reports');
+    else if (name === 'Pending') toast('View pending reports');
+    else if (name === 'In Progress') toast('View in-progress reports');
+    else if (name === 'Resolved') toast('View resolved reports');
+  };
 
   return (
     <div className="p-6">
@@ -56,7 +66,7 @@ export default function Dashboard() {
           {stats.map((stat) => {
             const Icon = stat.icon;
             return (
-              <div key={stat.name} className="bg-white shadow rounded-lg p-6">
+              <div key={stat.name} onClick={() => clickStat(stat.name)} className="bg-white shadow rounded-lg p-6 cursor-pointer hover:shadow-lg transition-shadow">
                 <div className="flex items-center">
                   <div className={`flex-shrink-0 p-3 rounded-md ${stat.bgColor}`}>
                     <Icon className={`h-6 w-6 ${stat.color}`} />

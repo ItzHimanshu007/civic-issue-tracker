@@ -12,18 +12,22 @@ const WelcomeScreen: React.FC = () => {
   const dispatch = useDispatch();
 
   const handleLogin = () => {
-    // Temporary mock login for demo
-    const mockUser = {
-      id: '1',
-      name: 'John Doe',
-      phoneNumber: '+1234567890',
-      email: 'john@example.com',
-      isVerified: true,
-      points: 150,
-      badges: [],
-      createdAt: new Date().toISOString(),
-    };
-    dispatch(setUser(mockUser));
+    try {
+      // Temporary mock login for demo
+      const mockUser = {
+        id: '1',
+        name: 'John Doe',
+        phoneNumber: '+1234567890',
+        email: 'john@example.com',
+        isVerified: true,
+        points: 150,
+        badges: [],
+        createdAt: new Date().toISOString(),
+      };
+      dispatch(setUser(mockUser));
+    } catch (error) {
+      console.error('Login error:', error);
+    }
   };
 
   return (

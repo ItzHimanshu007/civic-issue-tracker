@@ -140,7 +140,7 @@ export class PushNotificationService {
       logger.error('Error registering device:', error);
       return {
         success: false,
-        error: error.message
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
       };
     }
   }
@@ -162,7 +162,7 @@ export class PushNotificationService {
       logger.error('Error unregistering device:', error);
       return {
         success: false,
-        error: error.message
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
       };
     }
   }
@@ -200,14 +200,14 @@ export class PushNotificationService {
         };
       }
 
-      const deviceTokens = devicesResult.rows.map(row => row.device_token);
+      const deviceTokens = devicesResult.rows.map((row: any) => row.device_token);
       
       return await this.sendToTokens(deviceTokens, notification, notificationId);
     } catch (error) {
       logger.error('Error sending push notification to user:', error);
       return {
         success: false,
-        error: error.message
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
       };
     }
   }
@@ -280,7 +280,7 @@ export class PushNotificationService {
         },
       };
 
-      const response = await messaging.sendMulticast(message);
+      const response = await messaging.sendEachForMulticast(message);
 
       // Log delivery results
       if (notificationId) {
@@ -298,7 +298,7 @@ export class PushNotificationService {
         success: response.successCount > 0,
         successCount: response.successCount,
         failureCount: response.failureCount,
-        results: response.responses.map(result => ({
+        results: response.responses.map((result: any) => ({
           messageId: result.messageId,
           error: result.error?.message,
         })),
@@ -307,7 +307,7 @@ export class PushNotificationService {
       logger.error('Error sending push notifications:', error);
       return {
         success: false,
-        error: error.message
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
       };
     }
   }
@@ -375,7 +375,7 @@ export class PushNotificationService {
       logger.error(`Error sending push notification to topic ${topic}:`, error);
       return {
         success: false,
-        error: error.message
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
       };
     }
   }
@@ -423,7 +423,7 @@ export class PushNotificationService {
       logger.error('Error sending templated push notification:', error);
       return {
         success: false,
-        error: error.message
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
       };
     }
   }
@@ -447,7 +447,7 @@ export class PushNotificationService {
         return { success: false, error: 'No active devices found' };
       }
 
-      const tokens = devicesResult.rows.map(row => row.device_token);
+      const tokens = devicesResult.rows.map((row: any) => row.device_token);
       const messaging = admin.messaging(this.fcmApp);
 
       await messaging.subscribeToTopic(tokens, topic);
@@ -465,7 +465,7 @@ export class PushNotificationService {
       return { success: true };
     } catch (error) {
       logger.error('Error subscribing to topic:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
   }
 
@@ -485,7 +485,7 @@ export class PushNotificationService {
       );
 
       if (devicesResult.rows.length > 0) {
-        const tokens = devicesResult.rows.map(row => row.device_token);
+        const tokens = devicesResult.rows.map((row: any) => row.device_token);
         const messaging = admin.messaging(this.fcmApp);
 
         await messaging.unsubscribeFromTopic(tokens, topic);
@@ -502,7 +502,7 @@ export class PushNotificationService {
       return { success: true };
     } catch (error) {
       logger.error('Error unsubscribing from topic:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
   }
 
@@ -598,7 +598,7 @@ export class PushNotificationService {
     responses: admin.messaging.SendResponse[]
   ): Promise<void> {
     try {
-      const invalidTokens = [];
+      const invalidTokens: string[] = [];
       
       responses.forEach((response, index) => {
         if (response.error) {
@@ -676,7 +676,7 @@ export class PushNotificationService {
     } catch (error) {
       return {
         success: false,
-        error: error.message
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
       };
     }
   }

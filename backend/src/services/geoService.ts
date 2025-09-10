@@ -70,7 +70,7 @@ export class GeoService {
         `latitude BETWEEN $1 AND $2`,
         `longitude BETWEEN $3 AND $4`
       ];
-      const params = [bounds.south, bounds.north, bounds.west, bounds.east];
+      const params: any[] = [bounds.south, bounds.north, bounds.west, bounds.east];
 
       if (categories && categories.length > 0) {
         params.push(categories);
@@ -122,7 +122,7 @@ export class GeoService {
           ORDER BY count DESC
         `, [...params, clusterRadius]);
 
-        return result.rows.map(row => ({
+        return result.rows.map((row: any) => ({
           latitude: parseFloat(row.cluster_lat),
           longitude: parseFloat(row.cluster_lng),
           count: parseInt(row.count),
@@ -145,7 +145,7 @@ export class GeoService {
           LIMIT 1000
         `, params);
 
-        return result.rows.map(row => ({
+        return result.rows.map((row: any) => ({
           ...row,
           latitude: parseFloat(row.latitude),
           longitude: parseFloat(row.longitude),
@@ -177,7 +177,7 @@ export class GeoService {
         `latitude BETWEEN $1 AND $2`,
         `longitude BETWEEN $3 AND $4`
       ];
-      const params = [bounds.south, bounds.north, bounds.west, bounds.east];
+      const params: any[] = [bounds.south, bounds.north, bounds.west, bounds.east];
 
       if (categories && categories.length > 0) {
         params.push(categories);
@@ -211,7 +211,7 @@ export class GeoService {
         HAVING COUNT(*) > 0
       `, [...params, gridSize]);
 
-      return result.rows.map(row => ({
+      return result.rows.map((row: any) => ({
         latitude: parseFloat(row.grid_lat),
         longitude: parseFloat(row.grid_lng),
         intensity: parseFloat(row.intensity)
@@ -238,7 +238,7 @@ export class GeoService {
       const { categories, excludeReportId, limit = 50 } = options;
 
       let whereConditions = [];
-      const params = [center.latitude, center.longitude, radiusKm];
+      const params: any[] = [center.latitude, center.longitude, radiusKm];
 
       if (categories && categories.length > 0) {
         params.push(categories);
@@ -278,7 +278,7 @@ export class GeoService {
         LIMIT $${params.length}
       `, params);
 
-      return result.rows.map(row => ({
+      return result.rows.map((row: any) => ({
         ...row,
         latitude: parseFloat(row.latitude),
         longitude: parseFloat(row.longitude),
@@ -342,7 +342,7 @@ export class GeoService {
           resolvedReports: parseInt(stats.resolved_reports) || 0,
           avgResolutionTime: stats.avg_resolution_hours ? 
             `${Math.round(stats.avg_resolution_hours)} hours` : 'N/A',
-          topCategories: categoriesResult.rows.map(row => ({
+          topCategories: categoriesResult.rows.map((row: any) => ({
             category: row.category,
             count: parseInt(row.count)
           })),
@@ -389,7 +389,7 @@ export class GeoService {
       } = options;
 
       let whereConditions = [];
-      const params = [];
+      const params: any[] = [];
 
       if (category) {
         params.push(category);
@@ -439,7 +439,7 @@ export class GeoService {
         ORDER BY report_count DESC
       `, params);
 
-      return result.rows.map(row => ({
+      return result.rows.map((row: any) => ({
         center: {
           latitude: parseFloat(row.center_lat),
           longitude: parseFloat(row.center_lng)
@@ -474,7 +474,7 @@ export class GeoService {
         WHERE id = ANY($1)
       `, [reportIds]);
 
-      const reports = result.rows.map(row => ({
+      const reports = result.rows.map((row: any) => ({
         id: row.id,
         latitude: parseFloat(row.latitude),
         longitude: parseFloat(row.longitude),
@@ -600,7 +600,7 @@ export class GeoService {
           east: parseFloat(stats.max_lng) || 0,
           west: parseFloat(stats.min_lng) || 0
         },
-        topAreas: areasResult.rows.map(row => ({
+        topAreas: areasResult.rows.map((row: any) => ({
           area: row.area,
           count: parseInt(row.count)
         }))

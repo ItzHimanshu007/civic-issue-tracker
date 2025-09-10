@@ -300,7 +300,7 @@ const MapView: React.FC<MapViewProps> = ({
         {filters.clustered ? (
           <MarkerClusterGroup
             chunkedLoading
-            iconCreateFunction={(cluster) => {
+            iconCreateFunction={(cluster: any) => {
               const count = cluster.getChildCount();
               const markers = cluster.getAllChildMarkers();
               // Determine cluster priority based on highest priority in cluster

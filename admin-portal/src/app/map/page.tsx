@@ -38,7 +38,7 @@ interface HeatmapPoint {
   intensity: number;
 }
 
-interface MapFilters {
+interface MapFiltersType {
   categories: string[];
   statuses: string[];
   priorities: string[];
@@ -48,7 +48,7 @@ interface MapFilters {
   clustered: boolean;
 }
 
-const defaultFilters: MapFilters = {
+const defaultFilters: MapFiltersType = {
   categories: [],
   statuses: [],
   priorities: [],
@@ -59,7 +59,7 @@ const defaultFilters: MapFilters = {
 export default function MapPage() {
   const [reports, setReports] = useState<Report[]>([]);
   const [heatmapData, setHeatmapData] = useState<HeatmapPoint[]>([]);
-  const [filters, setFilters] = useState<MapFilters>(defaultFilters);
+  const [filters, setFilters] = useState<MapFiltersType>(defaultFilters);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [mapBounds, setMapBounds] = useState({

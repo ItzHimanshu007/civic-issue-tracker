@@ -99,7 +99,7 @@ export class MLClassificationService {
         return null;
       }
 
-      const data = await response.json();
+      const data = await response.json() as any;
       const content = data.choices[0]?.message?.content;
       
       if (content) {
@@ -171,7 +171,7 @@ export class MLClassificationService {
     ];
 
     // Find the best matching category
-    let bestMatch = { category: 'OTHER' as const, confidence: 0.3, reasoning: 'No specific keywords matched' };
+    let bestMatch: ClassificationResult = { category: 'OTHER', confidence: 0.3, reasoning: 'No specific keywords matched' };
     
     for (const cat of categories) {
       const matchedKeywords = cat.keywords.filter(keyword => text.includes(keyword));
@@ -220,7 +220,7 @@ export class MLClassificationService {
         return null;
       }
 
-      const data = await response.json();
+      const data = await response.json() as any;
       const annotations = data.responses[0];
 
       const labels = annotations.labelAnnotations?.map((label: any) => ({
@@ -274,7 +274,7 @@ export class MLClassificationService {
   async batchClassify(
     issues: Array<{ title: string; description: string; imageUrl?: string }>
   ): Promise<ClassificationResult[]> {
-    const results = [];
+    const results: ClassificationResult[] = [];
     
     for (const issue of issues) {
       try {
@@ -284,7 +284,7 @@ export class MLClassificationService {
         results.push(result);
       } catch (error) {
         logger.error('Batch classification error for issue:', error);
-        results.push({ category: 'OTHER', confidence: 0.3, reasoning: 'Classification failed' });
+        results.push({ category: 'OTHER' as const, confidence: 0.3, reasoning: 'Classification failed' });
       }
     }
 

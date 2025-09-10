@@ -30,7 +30,43 @@ const createReportSchema = Joi.object({
 
 // GET /api/reports - list with optional filters
 router.get('/', async (req: Request, res: Response) => {
-  const { status, category, userId, limit = 20, offset = 0 } = req.query as any;
+  const { status, category, userId, limit = 20, offset = 0, mock } = req.query as any;
+
+  // Large mock dataset support (no DB required)
+  if (process.env.MOCK_DATA === 'true' || mock === '1' || mock === 'true') {
+    const STATUSES = ['SUBMITTED','ACKNOWLEDGED','IN_PROGRESS','RESOLVED','CLOSED'] as const;
+    const PRIORITIES = ['NORMAL','URGENT','CRITICAL'] as const;
+    const CATEGORIES = ['POTHOLE','STREETLIGHT','GARBAGE','WATER_LEAK','SEWAGE','ROAD_MAINTENANCE','TRAFFIC_SIGNAL','PARK_MAINTENANCE','NOISE_POLLUTION','OTHER'] as const;
+
+    const total = 1000; // size of mock dataset
+    const items: any[] = [];
+    const now = Date.now();
+    for (let i = 0; i < total; i++) {
+      const st = STATUSES[i % STATUSES.length];
+      const pr = PRIORITIES[i % PRIORITIES.length];
+      const cat = CATEGORIES[i % CATEGORIES.length];
+      if (status && status !== st) continue;
+      if (category && category !== cat) continue;
+
+      items.push({
+        id: `mock-${i + 1}`,
+        title: `${cat.replace('_',' ')} issue #${i + 1}`,
+        description: `Auto-generated mock report ${i + 1} for quick frontend testing without DB.`,
+        category: cat,
+        priority: pr,
+        status: st,
+        latitude: 40.5 + (i % 100) * 0.005,
+        longitude: -74.2 + (i % 100) * 0.005,
+        address: `${100 + (i % 900)} Main St, Cityville`,
+        upvotes: Math.floor(Math.random() * 50),
+        created_at: new Date(now - i * 60_000).toISOString(),
+      });
+    }
+
+    const start = Number(offset) || 0;
+    const end = start + (Number(limit) || 50);
+    return res.json({ success: true, data: items.slice(start, end) });
+  }
 
   let whereClauses: string[] = [];
   const params: any[] = [];
@@ -51,7 +87,7 @@ router.get('/', async (req: Request, res: Response) => {
     params
   );
 
-  res.json({ success: true, data: result.rows });
+  return res.json({ success: true, data: result.rows });
 });
 
 // POST /api/reports - create report with media upload
