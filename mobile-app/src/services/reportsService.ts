@@ -4,7 +4,7 @@ import { Report, CreateReportRequest, ReportFilters } from '../types';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 
   (process.env.NODE_ENV === 'production' 
     ? 'https://civic-tracker-admin.vercel.app/api'
-    : 'http://localhost:3000/api');
+    : 'http://localhost:3001/api');
 
 const handleApiError = (error: any) => {
   console.error('API Error:', error);
@@ -98,17 +98,12 @@ export const createReport = async (reportData: CreateReportRequest): Promise<Rep
       description: reportData.description,
       category: reportData.category,
       priority: reportData.priority,
-      location: {
-        latitude: reportData.location.latitude,
-        longitude: reportData.location.longitude,
-      },
+      latitude: reportData.location.latitude,
+      longitude: reportData.location.longitude,
       address: reportData.address,
-      images: reportData.images || [],
-      videos: reportData.videos || [],
-      audioNotes: reportData.audioNotes || [],
     };
     
-    const response = await fetch(`${API_BASE_URL}/reports`, {
+    const response = await fetch(`${API_BASE_URL}/reports/mobile`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

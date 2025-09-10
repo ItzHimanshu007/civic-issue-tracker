@@ -312,6 +312,58 @@ router.get('/:id', optionalAuth, async (req: Request, res: Response) => {
   });
 });
 
+// POST /api/reports/mobile - create report from mobile app (simplified)
+router.post('/mobile', async (req: Request, res: Response) => {
+  logger.info('Mobile report creation request received:', req.body);
+  
+  const { error, value } = createReportSchema.validate(req.body);
+  if (error) {
+    logger.warn('Mobile report validation failed:', error.message);
+    return res.status(400).json({ success: false, message: error.message });
+  }
+
+  try {
+    // Get admin user ID
+    const userResult = await query('SELECT id FROM users WHERE username = $1 LIMIT 1', ['admin']);
+    if (userResult.rows.length === 0) {
+      logger.error('Admin user not found');
+      return res.status(500).json({ success: false, message: 'Admin user not found' });
+    }
+    const userId = userResult.rows[0].id;
+    // Simple category assignment
+    const category = value.category || 'OTHER';
+    
+    // Direct database insert without transaction for debugging
+    const reportResult = await query(
+      `INSERT INTO reports 
+        (user_id, title, description, category, priority, status, latitude, longitude, address)
+       VALUES ($1, $2, $3, $4, $5, 'SUBMITTED', $6, $7, $8)
+       RETURNING id, created_at`,
+      [
+        userId,
+        value.title,
+        value.description,
+        category,
+        value.priority || 'NORMAL',
+        value.latitude,
+        value.longitude,
+        value.address,
+      ]
+    );
+
+    const report = {
+      id: reportResult.rows[0].id,
+      createdAt: reportResult.rows[0].created_at,
+    };
+    
+    logger.info(`Mobile report created successfully: ${report.id}`);
+    return res.status(201).json({ success: true, data: report });
+  } catch (e: any) {
+    logger.error('Mobile report creation failed:', e);
+    return res.status(500).json({ success: false, message: 'Failed to create report', error: e.message });
+  }
+});
+
 // POST /api/reports/:id/classify - manually classify existing report
 router.post('/:id/classify', authenticateToken, async (req: Request, res: Response) => {
   const { id } = req.params;

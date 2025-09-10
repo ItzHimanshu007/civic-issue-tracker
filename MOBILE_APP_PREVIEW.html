@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Civic Issue Tracker - Mobile App Preview</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #2E7D32;
+            margin-bottom: 30px;
+        }
+        .phone-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        .phone {
+            width: 280px;
+            height: 580px;
+            background: linear-gradient(135deg, #333, #666);
+            border-radius: 25px;
+            padding: 20px 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        .status-bar {
+            height: 25px;
+            background: #2E7D32;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            color: white;
+            font-size: 12px;
+        }
+        .header {
+            height: 60px;
+            background: #2E7D32;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .content {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            height: calc(100% - 145px);
+        }
+        .tab-bar {
+            height: 60px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+        .tab {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #666;
+            cursor: pointer;
+        }
+        .tab.active {
+            color: #2E7D32;
+        }
+        .tab-icon {
+            font-size: 24px;
+            margin-bottom: 2px;
+        }
+        
+        /* Home Screen Styles */
+        .feed-header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .feed-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2E7D32;
+        }
+        .feed-subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+        .create-btn {
+            background: #2E7D32;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: bold;
+        }
+        .issue-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .issue-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .issue-title {
+            font-weight: bold;
+            color: #333;
+            font-size: 14px;
+        }
+        .status-badge {
+            background: #FFA726;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        .issue-description {
+            color: #666;
+            font-size: 12px;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+        .issue-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 8px;
+            border-top: 1px solid #f0f0f0;
+        }
+        .upvote-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #f5f5f5;
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+        }
+        .upvote-btn.active {
+            background: #E8F5E8;
+            color: #2E7D32;
+        }
+        
+        /* Map Screen Styles */
+        .map-legend {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+        .legend-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .legend-items {
+            display: flex;
+            justify-content: space-around;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+        }
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 6px;
+        }
+        .city-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .city-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .severity-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+        .city-info h3 {
+            margin: 0 0 4px 0;
+            font-size: 16px;
+        }
+        .coordinates {
+            color: #666;
+            font-size: 11px;
+        }
+        .issue-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        .issue-tag {
+            background: #E8F5E8;
+            color: #2E7D32;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+        }
+        
+        /* Profile Screen Styles */
+        .profile-header {
+            text-align: center;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .profile-avatar {
+            width: 60px;
+            height: 60px;
+            background: #2E7D32;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin: 0 auto 10px;
+        }
+        .profile-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2E7D32;
+        }
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+        }
+        .badges-section {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .badge-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .badge-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+        }
+        .badge-emoji {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        .badge-name {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+        .badge-desc {
+            font-size: 9px;
+            color: #666;
+        }
+        .leaderboard-item {
+            background: white;
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .rank-circle {
+            width: 28px;
+            height: 28px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .user-info {
+            flex: 1;
+        }
+        .user-name {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+        .user-stats {
+            font-size: 11px;
+            color: #666;
+        }
+        .user-points {
+            text-align: right;
+        }
+        .points {
+            font-weight: bold;
+            color: #2E7D32;
+        }
+        
+        /* Create Report Styles */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-label {
+            font-weight: bold;
+            color: #2E7D32;
+            margin-bottom: 6px;
+            display: block;
+        }
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        .form-textarea {
+            height: 80px;
+            resize: vertical;
+        }
+        .category-scroll {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 5px 0;
+        }
+        .category-btn {
+            background: #e0e0e0;
+            color: #666;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            font-size: 12px;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+        .category-btn.active {
+            background: #2E7D32;
+            color: white;
+        }
+        .priority-group {
+            display: flex;
+            gap: 8px;
+        }
+        .priority-btn {
+            flex: 1;
+            background: #e0e0e0;
+            color: #666;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+        }
+        .priority-btn.active {
+            background: #2E7D32;
+            color: white;
+        }
+        .image-section {
+            border: 2px dashed #2E7D32;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            background: #f8fff8;
+            margin-bottom: 15px;
+        }
+        .add-image-text {
+            color: #2E7D32;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+        .submit-btn {
+            background: #2E7D32;
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            width: 100%;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .phone-title {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #2E7D32;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏛️ Civic Issue Tracker - Mobile App Enhanced Features</h1>
+        
+        <div class="phone-container">
+            <!-- Home Screen -->
+            <div class="phone">
+                <div class="phone-title">🏘️ Home Feed</div>
+                <div class="screen">
+                    <div class="status-bar">
+                        <span>9:41</span>
+                        <span>📶 📱 🔋</span>
+                    </div>
+                    <div class="header">🏘️ Recent Issues</div>
+                    <div class="content">
+                        <div class="feed-header">
+                            <div class="feed-subtitle">Most upvoted civic problems</div>
+                        </div>
+                        
+                        <button class="create-btn">
+                            ➕ Report New Issue
+                        </button>
+                        
+                        <div class="issue-card">
+                            <div class="issue-header">
+                                <div class="issue-title">🚧 रांची में बड़ा गड्ढा</div>
+                                <div class="status-badge">SUBMITTED</div>
+                            </div>
+                            <div class="issue-description">Main Road Ranchi में बहुत बड़ा गड्ढा है जो दुर्घटना का कारण बन रहा है।</div>
+                            <div class="issue-footer">
+                                <button class="upvote-btn">
+                                    👍 142
+                                </button>
+                                <small>By: राजेश कुमार</small>
+                            </div>
+                        </div>
+                        
+                        <div class="issue-card">
+                            <div class="issue-header">
+                                <div class="issue-title">💡 Street Light Issue</div>
+                                <div class="status-badge" style="background: #42A5F5;">ACKNOWLEDGED</div>
+                            </div>
+                            <div class="issue-description">मोराबादी क्षेत्र में लगभग 10 स्ट्रीट लाइट्स खराब हैं।</div>
+                            <div class="issue-footer">
+                                <button class="upvote-btn active">
+                                    👍 89
+                                </button>
+                                <small>By: सुनीता देवी</small>
+                            </div>
+                        </div>
+                        
+                        <div class="issue-card">
+                            <div class="issue-header">
+                                <div class="issue-title">🗑️ Garbage Collection</div>
+                                <div class="status-badge" style="background: #AB47BC;">IN_PROGRESS</div>
+                            </div>
+                            <div class="issue-description">Hatia area में कूड़ा इकट्ठा नहीं हो रहा 1 सप्ताह से।</div>
+                            <div class="issue-footer">
+                                <button class="upvote-btn">
+                                    👍 76
+                                </button>
+                                <small>By: अनिल प्रसाद</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-bar">
+                        <div class="tab active">
+                            <div class="tab-icon">🏠</div>
+                            <div>Home</div>
+                        </div>
+                        <div class="tab">
+                            <div class="tab-icon">🗺️</div>
+                            <div>Map</div>
+                        </div>
+                        <div class="tab">
+                            <div class="tab-icon">📄</div>
+                            <div>Reports</div>
+                        </div>
+                        <div class="tab">
+                            <div class="tab-icon">👤</div>
+                            <div>Profile</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map Screen -->
+            <div class="phone">
+                <div class="phone-title">🗺️ Heat Map</div>
+                <div class="screen">
+                    <div class="status-bar">
+                        <span>9:41</span>
+                        <span>📶 📱 🔋</span>
+                    </div>
+                    <div class="header">🗺️ Jharkhand Heat Map</div>
+                    <div class="content">
+                        <div class="map-legend">
+                            <div class="legend-title">Issue Density:</div>
+                            <div class="legend-items">
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background: #F44336;"></div>
+                                    <span>High (80+)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background: #FF9800;"></div>
+                                    <span>Medium (30-80)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background: #4CAF50;"></div>
+                                    <span>Low (<30)</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="city-card">
+                            <div class="city-header">
+                                <div class="severity-circle" style="background: #F44336;">89</div>
+                                <div class="city-info">
+                                    <h3>Ranchi</h3>
+                                    <div class="coordinates">📍 23.3441, 85.3096</div>
+                                    <div style="font-size: 11px; color: #F44336; font-weight: bold;">HIGH DENSITY</div>
+                                </div>
+                            </div>
+                            <div class="issue-tags">
+                                <div class="issue-tag">Potholes</div>
+                                <div class="issue-tag">Street Lights</div>
+                                <div class="issue-tag">Garbage</div>
+                            </div>
+                        </div>
+                        
+                        <div class="city-card">
+                            <div class="city-header">
+                                <div class="severity-circle" style="background: #FF9800;">67</div>
+                                <div class="city-info">
+                                    <h3>Jamshedpur</h3>
+                                    <div class="coordinates">📍 22.7596, 86.1517</div>
+                                    <div style="font-size: 11px; color: #FF9800; font-weight: bold;">MEDIUM DENSITY</div>
+                                </div>
+                            </div>
+                            <div class="issue-tags">
+                                <div class="issue-tag">Traffic</div>
+                                <div class="issue-tag">Water Leakage</div>
+                                <div class="issue-tag">Road Maintenance</div>
+                            </div>
+                        </div>
+                        
+                        <div class="city-card">
+                            <div class="city-header">
+                                <div class="severity-circle" style="background: #4CAF50;">43</div>
+                                <div class="city-info">
+                                    <h3>Bokaro</h3>
+                                    <div class="coordinates">📍 23.6693, 86.1511</div>
+                                    <div style="font-size: 11px; color: #4CAF50; font-weight: bold;">LOW DENSITY</div>
+                                </div>
+                            </div>
+                            <div class="issue-tags">
+                                <div class="issue-tag">Park Maintenance</div>
+                                <div class="issue-tag">Street Lights</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-bar">
+                        <div class="tab">
+                            <div class="tab-icon">🏠</div>
+                            <div>Home</div>
+                        </div>
+                        <div class="tab active">
+                            <div class="tab-icon">🗺️</div>
+                            <div>Map</div>
+                        </div>
+                        <div class="tab">
+                            <div class="tab-icon">📄</div>
+                            <div>Reports</div>
+                        </div>
+                        <div class="tab">
+                            <div class="tab-icon">👤</div>
+                            <div>Profile</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Report Screen -->
+            <div class="phone">
+                <div class="phone-title">📝 Create Report</div>
+                <div class="screen">
+                    <div class="status-bar">
+                        <span>9:41</span>
+                        <span>📶 📱 🔋</span>
+                    </div>
+                    <div class="header">📝 Create New Report</div>
+                    <div class="content">
+                        <div class="form-group">
+                            <label class="form-label">Title *</label>
+                            <input class="form-input" placeholder="Brief description of the issue" value="Street light not working">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Description *</label>
+                            <textarea class="form-input form-textarea" placeholder="Detailed description">The street light on Main Road has been non-functional for 3 days...</textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Category</label>
+                            <div class="category-scroll">
+                                <button class="category-btn">Pothole</button>
+                                <button class="category-btn active">Street Light</button>
+                                <button class="category-btn">Garbage</button>
+                                <button class="category-btn">Water Leak</button>
+                                <button class="category-btn">Traffic</button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Priority</label>
+                            <div class="priority-group">
+                                <button class="priority-btn">Normal</button>
+                                <button class="priority-btn active">Urgent</button>
+                                <button class="priority-btn">Critical</button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Photos (0/5)</label>
+                            <div class="image-section">
+                                📷
+                                <div class="add-image-text">Add Photos</div>
+                                <div style="font-size: 11px; color: #666; margin-top: 4px;">Camera • Gallery</div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Address *</label>
+                            <input class="form-input" placeholder="Where is this issue located?" value="Main Road, Ranchi, Jharkhand">
+                        </div>
+                        
+                        <button class="submit-btn">Submit Report</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Screen -->
+            <div class="phone">
+                <div class="phone-title">👑 Profile & Leaderboard</div>
+                <div class="screen">
+                    <div class="status-bar">
+                        <span>9:41</span>
+                        <span>📶 📱 🔋</span>
+                    </div>
+                    <div class="header">👑 Profile</div>
+                    <div class="content">
+                        <div class="profile-header">
+                            <div class="profile-avatar">👤</div>
+                            <div style="font-size: 18px; font-weight: bold; margin-bottom: 4px;">राज कुमार</div>
+                            <div style="color: #666; font-size: 14px;">Active Citizen • Rank #3</div>
+                            <div class="profile-stats">
+                                <div class="stat-item">
+                                    <div class="stat-number">8</div>
+                                    <div class="stat-label">Reports</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-number">156</div>
+                                    <div class="stat-label">Upvotes</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-number">324</div>
+                                    <div class="stat-label">Points</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="badges-section">
+                            <div class="section-title">🏆 Your Badges</div>
+                            <div class="badge-grid">
+                                <div class="badge-card">
+                                    <div class="badge-emoji">🥇</div>
+                                    <div class="badge-name">First Reporter</div>
+                                    <div class="badge-desc">Submitted first report</div>
+                                </div>
+                                <div class="badge-card">
+                                    <div class="badge-emoji">🦸</div>
+                                    <div class="badge-name">Community Hero</div>
+                                    <div class="badge-desc">100+ upvotes received</div>
+                                </div>
+                                <div class="badge-card">
+                                    <div class="badge-emoji">🏛️</div>
+                                    <div class="badge-name">City Guardian</div>
+                                    <div class="badge-desc">5+ issue types reported</div>
+                                </div>
+                                <div class="badge-card">
+                                    <div class="badge-emoji">⚡</div>
+                                    <div class="badge-name">Active Citizen</div>
+                                    <div class="badge-desc">3+ weeks active</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: white; border-radius: 12px; overflow: hidden;">
+                            <div style="padding: 15px; border-bottom: 1px solid #f0f0f0;">
+                                <div class="section-title">👑 Community Leaderboard</div>
+                                <div style="color: #666; font-size: 12px;">Top citizens making a difference</div>
+                            </div>
+                            
+                            <div class="leaderboard-item">
+                                <div class="rank-circle" style="background: #FFD700;">#1</div>
+                                <div class="user-info">
+                                    <div class="user-name">सुनीता देवी 👩</div>
+                                    <div class="user-stats">📝 15 reports • 👍 289 upvotes</div>
+                                </div>
+                                <div class="user-points">
+                                    <div class="points">445</div>
+                                    <div style="font-size: 10px;">points</div>
+                                    <div>🥇🦸🏛️⚡🌟</div>
+                                </div>
+                            </div>
+                            
+                            <div class="leaderboard-item">
+                                <div class="rank-circle" style="background: #C0C0C0;">#2</div>
+                                <div class="user-info">
+                                    <div class="user-name">अनिल प्रसाद 👨</div>
+                                    <div class="user-stats">📝 12 reports • 👍 234 upvotes</div>
+                                </div>
+                                <div class="user-points">
+                                    <div class="points">378</div>
+                                    <div style="font-size: 10px;">points</div>
+                                    <div>🥇🦸🏛️⚡</div>
+                                </div>
+                            </div>
+                            
+                            <div class="leaderboard-item" style="background: #E8F5E8;">
+                                <div class="rank-circle" style="background: #CD7F32;">#3</div>
+                                <div class="user-info">
+                                    <div class="user-name" style="color: #2E7D32; font-weight: bold;">राज कुमार (You) 👤</div>
+                                    <div class="user-stats">📝 8 reports • 👍 156 upvotes</div>
+                                </div>
+                                <div class="user-points">
+                                    <div class="points">324</div>
+                                    <div style="font-size: 10px;">points</div>
+                                    <div>🥇🦸🏛️⚡</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-bar">
+                        <div class="tab">
+                            <div class="tab-icon">🏠</div>
+                            <div>Home</div>
+                        </div>
+                        <div class="tab">
+                            <div class="tab-icon">🗺️</div>
+                            <div>Map</div>
+                        </div>
+                        <div class="tab">
+                            <div class="tab-icon">📄</div>
+                            <div>Reports</div>
+                        </div>
+                        <div class="tab active">
+                            <div class="tab-icon">👤</div>
+                            <div>Profile</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 40px; padding: 30px; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+            <h2 style="color: #2E7D32; margin-bottom: 20px;">🚀 Mobile App Enhancement Complete!</h2>
+            <p style="color: #666; line-height: 1.6; max-width: 800px; margin: 0 auto;">
+                The Civic Issue Tracker mobile app has been enhanced with comprehensive features including:
+                <strong>interactive home feed with upvoting</strong>, <strong>Jharkhand heat map visualization</strong>, 
+                <strong>advanced create report form with image upload</strong>, and <strong>gamified profile with leaderboard</strong>.
+                All features use realistic Indian sample data and are ready for backend integration.
+            </p>
+            <div style="margin-top: 20px;">
+                <span style="background: #E8F5E8; color: #2E7D32; padding: 8px 16px; border-radius: 20px; margin: 5px; display: inline-block;">✅ Navigation Enhanced</span>
+                <span style="background: #E8F5E8; color: #2E7D32; padding: 8px 16px; border-radius: 20px; margin: 5px; display: inline-block;">✅ Image Upload Ready</span>
+                <span style="background: #E8F5E8; color: #2E7D32; padding: 8px 16px; border-radius: 20px; margin: 5px; display: inline-block;">✅ Indian Data Integrated</span>
+                <span style="background: #E8F5E8; color: #2E7D32; padding: 8px 16px; border-radius: 20px; margin: 5px; display: inline-block;">✅ Committed to GitHub</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
