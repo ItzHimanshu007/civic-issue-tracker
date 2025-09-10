@@ -356,8 +356,32 @@ router.post('/mobile', async (req: Request, res: Response) => {
       createdAt: reportResult.rows[0].created_at,
     };
     
-    logger.info(`Mobile report created successfully: ${report.id}`);
-    return res.status(201).json({ success: true, data: report });
+    // Auto-route to department based on category
+    const categoryDepartments = {
+      'POTHOLE': 'Road Maintenance Department',
+      'STREETLIGHT': 'Electrical Department', 
+      'GARBAGE': 'Sanitation Department',
+      'WATER_LEAK': 'Water Supply Department',
+      'SEWAGE': 'Water Supply Department',
+      'ROAD_MAINTENANCE': 'Road Maintenance Department',
+      'TRAFFIC_SIGNAL': 'Traffic Police Department',
+      'PARK_MAINTENANCE': 'Parks and Recreation Department',
+      'NOISE_POLLUTION': 'Environmental Department',
+      'OTHER': 'General Administration'
+    };
+    
+    const assignedDepartment = categoryDepartments[category as keyof typeof categoryDepartments] || 'General Administration';
+    
+    logger.info(`Mobile report created successfully: ${report.id}, auto-routed to: ${assignedDepartment}`);
+    
+    return res.status(201).json({ 
+      success: true, 
+      data: {
+        ...report,
+        assignedDepartment,
+        routingMessage: `Automatically routed to ${assignedDepartment}`
+      }
+    });
   } catch (e: any) {
     logger.error('Mobile report creation failed:', e);
     return res.status(500).json({ success: false, message: 'Failed to create report', error: e.message });

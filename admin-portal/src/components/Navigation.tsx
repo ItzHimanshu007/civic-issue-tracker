@@ -11,6 +11,7 @@ import {
   UsersIcon,
   ArrowRightOnRectangleIcon,
   UserCircleIcon,
+  TrophyIcon,
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '@/store/authStore';
 import { AuthApi } from '@/lib/api';
@@ -20,6 +21,7 @@ const navigation = [
   { name: 'Dashboard', href: '/', icon: HomeIcon },
   { name: 'Map View', href: '/map', icon: MapIcon },
   { name: 'Reports', href: '/reports', icon: DocumentTextIcon },
+  { name: 'Leaderboard', href: '/leaderboard', icon: TrophyIcon },
   { name: 'Analytics', href: '/analytics', icon: ChartBarSquareIcon },
   { name: 'Departments', href: '/departments', icon: BuildingOfficeIcon },
   { name: 'Users', href: '/users', icon: UsersIcon },

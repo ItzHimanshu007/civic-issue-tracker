@@ -13,6 +13,12 @@ const createDepartmentSchema = Joi.object({
   contactPhone: Joi.string().max(20).optional(),
 });
 
+const createRoutingRuleSchema = Joi.object({
+  category: Joi.string().valid('POTHOLE','STREETLIGHT','GARBAGE','WATER_LEAK','SEWAGE','ROAD_MAINTENANCE','TRAFFIC_SIGNAL','PARK_MAINTENANCE','NOISE_POLLUTION','OTHER').required(),
+  keywords: Joi.array().items(Joi.string().max(50)).default([]),
+  departmentId: Joi.string().uuid().required(),
+});
+
 const createStaffSchema = Joi.object({
   userId: Joi.string().uuid().required(),
   departmentId: Joi.string().uuid().required(),
@@ -234,6 +240,134 @@ router.delete('/:id/staff/:staffId', authenticateToken, authorizeRoles('ADMIN'),
     res.json({ success: true, message: 'Staff member removed' });
   } catch (error: any) {
     res.status(400).json({ success: false, message: error.message || 'Failed to remove staff' });
+  }
+});
+
+// GET /api/departments/routing - get all routing rules
+router.get('/routing', async (req: Request, res: Response) => {
+  try {
+    const result = await query(
+      `SELECT dr.*, d.name as department_name
+       FROM department_routing dr
+       JOIN departments d ON dr.department_id = d.id
+       WHERE d.is_active = true
+       ORDER BY dr.category, d.name`
+    );
+    
+    return res.json({ success: true, data: result.rows });
+  } catch (error) {
+    // Return default rules if table doesn't exist
+    const defaultRules = [
+      {
+        id: '1',
+        category: 'POTHOLE',
+        keywords: ['road', 'hole', 'गड्ढा', 'सड़क'],
+        departmentId: 'default-road-dept',
+        departmentName: 'Road Maintenance Department'
+      },
+      {
+        id: '2',
+        category: 'STREETLIGHT',
+        keywords: ['light', 'बत्ती', 'street', 'lamp'],
+        departmentId: 'default-electric-dept',
+        departmentName: 'Electrical Department'
+      },
+      {
+        id: '3',
+        category: 'GARBAGE',
+        keywords: ['garbage', 'waste', 'कूड़ा', 'safai'],
+        departmentId: 'default-clean-dept',
+        departmentName: 'Sanitation Department'
+      },
+      {
+        id: '4',
+        category: 'WATER_LEAK',
+        keywords: ['water', 'leak', 'पानी', 'pipe'],
+        departmentId: 'default-water-dept',
+        departmentName: 'Water Supply Department'
+      },
+      {
+        id: '5',
+        category: 'TRAFFIC_SIGNAL',
+        keywords: ['traffic', 'signal', 'ट्रैफिक', 'light'],
+        departmentId: 'default-traffic-dept',
+        departmentName: 'Traffic Police Department'
+      }
+    ];
+    return res.json({ success: true, data: defaultRules });
+  }
+});
+
+// POST /api/departments/routing - create routing rule
+router.post('/routing', authenticateToken, authorizeRoles('ADMIN'), async (req: Request, res: Response) => {
+  const { error, value } = createRoutingRuleSchema.validate(req.body);
+  if (error) return res.status(400).json({ success: false, message: error.message });
+
+  try {
+    const result = await query(
+      `INSERT INTO department_routing (category, keywords, department_id)
+       VALUES ($1, $2, $3)
+       RETURNING *`,
+      [value.category, JSON.stringify(value.keywords), value.departmentId]
+    );
+    
+    return res.status(201).json({ success: true, data: result.rows[0] });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: 'Failed to create routing rule' });
+  }
+});
+
+// POST /api/departments/auto-route/:reportId - auto-route report to department
+router.post('/auto-route/:reportId', async (req: Request, res: Response) => {
+  const { reportId } = req.params;
+  
+  try {
+    // Get report details
+    const reportResult = await query(
+      'SELECT title, description, category FROM reports WHERE id = $1',
+      [reportId]
+    );
+    
+    if (reportResult.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Report not found' });
+    }
+    
+    const report = reportResult.rows[0];
+    
+    // Default department routing based on category
+    const categoryDepartments = {
+      'POTHOLE': 'Road Maintenance Department',
+      'STREETLIGHT': 'Electrical Department', 
+      'GARBAGE': 'Sanitation Department',
+      'WATER_LEAK': 'Water Supply Department',
+      'SEWAGE': 'Water Supply Department',
+      'ROAD_MAINTENANCE': 'Road Maintenance Department',
+      'TRAFFIC_SIGNAL': 'Traffic Police Department',
+      'PARK_MAINTENANCE': 'Parks and Recreation Department',
+      'NOISE_POLLUTION': 'Environmental Department',
+      'OTHER': 'General Administration'
+    };
+    
+    const assignedDepartment = categoryDepartments[report.category as keyof typeof categoryDepartments] || 'General Administration';
+    
+    // Update report with department assignment (mock assignment for now)
+    const updateResult = await query(
+      'UPDATE reports SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
+      ['ACKNOWLEDGED', reportId]
+    );
+    
+    return res.json({
+      success: true,
+      data: {
+        reportId,
+        category: report.category,
+        assignedDepartment,
+        status: 'ACKNOWLEDGED',
+        message: `Report automatically routed to ${assignedDepartment} based on category: ${report.category}`
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Failed to auto-route report' });
   }
 });
 

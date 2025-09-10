@@ -88,7 +88,26 @@ export interface ReportDto {
   longitude: number;
   address: string;
   upvotes?: number;
+  hasUserUpvoted?: boolean;
   created_at: string;
+}
+
+export interface LeaderboardEntry {
+  id: string;
+  name: string;
+  totalReports: number;
+  totalUpvotes: number;
+  points: number;
+  badges: string[];
+  rank: number;
+}
+
+export interface DepartmentRule {
+  id: string;
+  category: string;
+  keywords: string[];
+  departmentId: string;
+  departmentName: string;
 }
 
 export interface DashboardStats {
@@ -182,6 +201,68 @@ export const ReportsApi = {
       comment,
     });
     return res.data.data;
+  },
+};
+
+export const EngagementApi = {
+  async toggleUpvote(reportId: string) {
+    const res = await api.post<{ 
+      success: boolean; 
+      data: { upvoted: boolean; upvoteCount: number } 
+    }>(`/api/engagement/reports/${reportId}/upvote`);
+    return res.data;
+  },
+
+  async getComments(reportId: string) {
+    const res = await api.get<{ success: boolean; data: any[] }>(`/api/engagement/reports/${reportId}/comments`);
+    return res.data.data;
+  },
+
+  async addComment(reportId: string, content: string, isInternal = false) {
+    const res = await api.post<{ success: boolean; data: any }>(`/api/engagement/reports/${reportId}/comments`, {
+      content,
+      isInternal,
+    });
+    return res.data;
+  },
+};
+
+export const LeaderboardApi = {
+  async getLeaderboard(limit = 10, type: 'reports' | 'upvotes' | 'points' = 'points') {
+    const res = await api.get<{ success: boolean; data: LeaderboardEntry[] }>(
+      `/api/gamification/leaderboard?limit=${limit}&type=${type}`
+    );
+    return res.data.data;
+  },
+
+  async getUserStats(userId?: string) {
+    const endpoint = userId ? `/api/gamification/users/${userId}/stats` : '/api/gamification/users/me/stats';
+    const res = await api.get<{ success: boolean; data: any }>(endpoint);
+    return res.data.data;
+  },
+};
+
+export const DepartmentApi = {
+  async getRoutingRules() {
+    const res = await api.get<{ success: boolean; data: DepartmentRule[] }>('/api/departments/routing');
+    return res.data.data;
+  },
+
+  async createRoutingRule(rule: Omit<DepartmentRule, 'id'>) {
+    const res = await api.post<{ success: boolean; data: DepartmentRule }>('/api/departments/routing', rule);
+    return res.data.data;
+  },
+
+  async updateRoutingRule(id: string, rule: Partial<DepartmentRule>) {
+    const res = await api.patch<{ success: boolean; data: DepartmentRule }>(`/api/departments/routing/${id}`, rule);
+    return res.data.data;
+  },
+
+  async assignReportToDepartment(reportId: string, departmentId: string) {
+    const res = await api.post<{ success: boolean }>(`/api/reports/${reportId}/assign`, {
+      departmentId,
+    });
+    return res.data;
   },
 };
 
